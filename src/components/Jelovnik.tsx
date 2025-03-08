@@ -3,6 +3,7 @@ import { supabase } from "../supabaseClient";
 import MenuSection from "./MenuSection";
 import { Clock, MapPin } from "lucide-react";
 import heroImage from "./heroImage.jpg";
+import logo from "../resources/LOGO Cjenik 1.png"
 
 const Jelovnik = () => {
   const [menuData, setMenuData] = useState(null);
@@ -105,6 +106,8 @@ const Jelovnik = () => {
       <div className="sticky top-0 z-10 bg-white shadow-md">
         <div className="mx-auto max-w-7xl px-4">
           <div className="relative">
+          <img src={logo} alt="AliKebaba Logo" className="absolute -top-32 left-0 w-32 aspect-auto"/>
+     
             {showLeftArrow && (
               <button 
                 onClick={() => scrollContainerRef.current?.scrollBy(-200, 0)}
@@ -119,13 +122,13 @@ const Jelovnik = () => {
             <div 
               ref={scrollContainerRef}
               onScroll={checkScroll}
-              className="flex sm:justify-center overflow-x-auto py-4 px-8 scrollbar-hide"
+              className="flex lg:justify-center overflow-x-auto py-4 px-8 scrollbar-hide"
             >
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-shrink-0 rounded-full px-6 py-2 font-medium transition-colors ${
+                  className={`flex-shrink-0 border border-red-100  rounded-full px-6 py-2 font-medium transition-colors ${
                     activeTab === tab.id ? "bg-[#C41E3A] text-white" : "text-[#8B4513] hover:bg-red-50"
                   } mr-2`}
                 >
