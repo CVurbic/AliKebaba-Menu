@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  /* Track */
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #FDF6E9;
+    border-radius: 6px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Thumb */
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #E8D5B5, #D4B78F);
+    border-radius: 6px;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  /* Thumb hover effect */
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #D4B78F, #B8946E);
+    transform: scale(1.1);
+  }
+  
+  /* For Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #E8D5B5 #FDF6E9;
+  }
