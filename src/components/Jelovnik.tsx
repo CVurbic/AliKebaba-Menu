@@ -3,12 +3,15 @@ import { supabase } from "../supabaseClient";
 import MenuSection from "./MenuSection";
 import { Clock, MapPin } from "lucide-react";
 import heroImage from "./heroImage.jpg";
-import logo from "../resources/LOGO Cjenik 1.png"
+import logo from "../resources/LOGO Cjenik 1.png";
+import { useLanguage } from "../context/LanguageContext";
+import { availableLanguages } from "../services/language";
 
 const Jelovnik = () => {
   const [menuData, setMenuData] = useState(null);
   const [activeTab, setActiveTab] = useState("classic");
   const [loading, setLoading] = useState(true);
+  const { currentLanguage, setLanguage, t } = useLanguage();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -23,21 +26,27 @@ const Jelovnik = () => {
   };
 
   useEffect(() => {
+    // Check if we have a saved language preference
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['hr', 'en', 'de'].includes(savedLanguage)) {
+      setLanguage(savedLanguage as 'hr' | 'en' | 'de');
+    }
+    
     checkScroll();
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
   }, []);
 
   const tabs = [
-    { id: "steak", label: "STEAK" },
-    { id: "classic", label: "CLASSIC" },
-    { id: "chicken", label: "CHICKEN" },
-    { id: "mix", label: "MIX" },
-    { id: "nuggets", label: "NUGGETS" },
-    { id: "vege", label: "VEGE" },
-    { id: "prilozi", label: "PRILOZI" },
-    { id: "desert", label: "DESERT" },
-    { id: "napitci", label: "NAPITCI" },
+    { id: "steak", label: t("STEAK") },
+    { id: "classic", label: t("CLASSIC") },
+    { id: "chicken", label: t("CHICKEN") },
+    { id: "mix", label: t("MIX") },
+    { id: "nuggets", label: t("NUGGETS") },
+    { id: "vege", label: t("VEGE") },
+    { id: "prilozi", label: t("PRILOZI") },
+    { id: "desert", label: t("DESERT") },
+    { id: "napitci", label: t("NAPITCI") },
   ];
 
   useEffect(() => {
@@ -74,7 +83,7 @@ const Jelovnik = () => {
         "MOZZARELLA": "vege",
         "PRILOZI": "prilozi",
         "NAPITCI": "napitci",
-        "SLASTICE": "desert",
+        "DESERT": "desert",
       };
 
       const key = Object.entries(collectionMap).find(([collection]) =>
@@ -89,24 +98,43 @@ const Jelovnik = () => {
     }, {});
   };
 
-  if (loading) return <div className="text-center py-8">Učitavanje...</div>;
+  if (loading) return <div className="text-center py-8">{t('loading')}</div>;
 
   return (
     <main className="min-h-screen w-full bg-white">
-      {/* Hero sekcija */}
+      {/* Hero section */}
       <div className="relative h-[40vh] md:h-[60vh] w-full overflow-hidden bg-[#C41E3A]">
         <img
           src={heroImage}
           alt="Ali Kebaba restaurant"
           className="object-cover w-full h-full brightness-75"
         />
+        
+        {/* Language selector */}
+        <div className="absolute top-4 right-4 z-10">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-2 flex space-x-2">
+            {availableLanguages.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => setLanguage(lang.code as 'hr' | 'en' | 'de')}
+                className={`px-3 py-1 rounded-md transition-colors ${
+                  currentLanguage === lang.code 
+                    ? 'bg-[#C41E3A] text-white' 
+                    : 'text-gray-700 hover:bg-red-100'
+                }`}
+              >
+                {lang.name}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Navigacijski tabovi */}
+      {/* Navigation tabs */}
       <div className="sticky top-0 z-10 bg-white shadow-md">
         <div className="mx-auto max-w-7xl px-4">
           <div className="relative">
-          <img src={logo} alt="AliKebaba Logo" className="absolute -top-32 left-0 w-32 aspect-auto"/>
+            <img src={logo} alt="AliKebaba Logo" className="absolute -top-32 left-0 w-32 aspect-auto"/>
      
             {showLeftArrow && (
               <button 
@@ -128,7 +156,7 @@ const Jelovnik = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-shrink-0 border border-red-100  rounded-full px-6 py-2 font-medium transition-colors ${
+                  className={`flex-shrink-0 border border-red-100 rounded-full px-6 py-2 font-medium transition-colors ${
                     activeTab === tab.id ? "bg-[#C41E3A] text-white" : "text-[#8B4513] hover:bg-red-50"
                   } mr-2`}
                 >
@@ -151,40 +179,40 @@ const Jelovnik = () => {
         </div>
       </div>
 
-      {/* Sadržaj menija */}
+      {/* Menu content */}
       <div className="mx-auto max-w-7xl px-4 py-12">
         {menuData && Object.keys(menuData).map((category) => {
           if (category === activeTab) {
-            return <MenuSection key={category} title={category.toUpperCase()} items={menuData[category]} />;
+            return <MenuSection 
+              key={category} 
+              title={t(category.toUpperCase())} 
+              items={menuData[category]} 
+            />;
           }
           return null;
         })}
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#7a1627] py-8 text-white">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mb-8 grid gap-8 md:grid-cols-3">
-            <div className="flex items-center justify-center md:justify-start">
-              <MapPin className="mr-2 h-5 w-5" />
-              <span>Trg Josipa Langa 7, Zagreb</span>
-            </div>
-            <div></div>
-            {/* <div className="flex items-center justify-center md:justify-start">
-              <Phone className="mr-2 h-5 w-5" />
-              <span>099 123 4567</span>
-            </div> */}
-            <div className="flex flex-col items-center justify-center md:justify-start">
-              <Clock className="mr-2 h-5 w-5" />
-              <span>Pon-Uto: 09-01h</span>
-              <span>Sri-Čet: 09-02h</span>
-              <span>Pet-Sub: 09-04h</span>
-              <span>Ned: 10-01h</span>
-            </div>
-          </div>
-          <p className="text-center">© {new Date().getFullYear()} Ali Kebaba. Sva prava pridržana.</p>
-        </div>
-      </footer>
+<footer className="bg-[#7a1627] py-8 text-white">
+  <div className="mx-auto max-w-7xl px-4">
+    <div className="mb-8 grid gap-8 md:grid-cols-3">
+      <div className="flex items-center justify-center md:justify-start">
+        <MapPin className="mr-2 h-5 w-5" />
+        <span>{t('address')}</span>
+      </div>
+      <div></div>
+      <div className="flex flex-col items-center justify-center md:justify-start">
+        <Clock className="mr-2 h-5 w-5" />
+        <span>{t('workingHoursPonUto')}</span>
+        <span>{t('workingHoursSriCet')}</span>
+        <span>{t('workingHoursPetSub')}</span>
+        <span>{t('workingHoursNed')}</span>
+      </div>
+    </div>
+    <p className="text-center">© {new Date().getFullYear()} Ali Kebaba. {t('allRightsReserved')}</p>
+  </div>
+</footer>
     </main>
   );
 };
