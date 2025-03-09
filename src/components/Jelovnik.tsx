@@ -12,6 +12,7 @@ const Jelovnik = () => {
   const [activeTab, setActiveTab] = useState("classic");
   const [loading, setLoading] = useState(true);
   const { currentLanguage, setLanguage, t } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -112,20 +113,40 @@ const Jelovnik = () => {
         
         {/* Language selector */}
         <div className="absolute top-4 right-4 z-10">
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-2 flex space-x-2">
-            {availableLanguages.map(lang => (
-              <button
-                key={lang.code}
-                onClick={() => setLanguage(lang.code as 'hr' | 'en' | 'de')}
-                className={`px-3 py-1 rounded-md transition-colors ${
-                  currentLanguage === lang.code 
-                    ? 'bg-[#C41E3A] text-white' 
-                    : 'text-gray-700 hover:bg-red-100'
-                }`}
+          <div className="relative">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md px-4 py-2 text-[#C41E3A] font-medium hover:bg-white/90 transition-colors flex items-center space-x-2"
+            >
+              <span>{availableLanguages.find(lang => lang.code === currentLanguage)?.name}</span>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+                viewBox="0 0 20 20" 
+                fill="currentColor"
               >
-                {lang.name}
-              </button>
-            ))}
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden">
+                {availableLanguages.map(lang => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      setLanguage(lang.code as 'hr' | 'en' | 'de');
+                      setIsOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors ${
+                      currentLanguage === lang.code ? 'text-[#C41E3A] font-medium' : 'text-gray-700'
+                    }`}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
