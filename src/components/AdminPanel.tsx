@@ -8,6 +8,7 @@ import { translateMenuItem, isTranslationAvailable } from "../utils/translate";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { useNavigate } from "react-router-dom";
 
 export interface Subscription {
   channel: RealtimeChannel;
@@ -51,7 +52,7 @@ const AdminPanel = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationAvailable, setTranslationAvailable] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
-
+  const navigate = useNavigate()
   const newItemTemplate: MenuItem = {
     collection: "CLASSIC KEBAB",
     external_id: `new-${Date.now()}`,
@@ -279,11 +280,17 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <header className="bg-[#C41E3A] text-white shadow-md">
+        <header className="bg-[#C41E3A] text-white shadow-md flex justify-between items-center">
           <div className="container mx-auto px-4 py-6">
             <h1 className="text-3xl font-bold">Menu Admin</h1>
             <p className="mt-2 text-white/80">Manage your restaurant menu items</p>
           </div>
+          <button
+            className="flex items-center justify-center border border-gray-200 border-dashed rounded-lg bg-[#f12244] mr-4 px-4 py-2 text-white hover:bg-[#a01930] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/50"
+            onClick={() => navigate("/")}
+            >
+                Jelovnik
+            </button>
         </header>
 
         {/* Main content */}

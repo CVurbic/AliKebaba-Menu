@@ -34,7 +34,7 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero section */}
-      <div className="relative h-[40vh] md:h-[60vh] bg-[#C41E3A]">
+      <div className="relative h-[20vh] md:h-[20vh] bg-[#C41E3A]">
         <div className="absolute inset-0 bg-black/30" />
         
         {/* Language selector */}
