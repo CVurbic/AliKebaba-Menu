@@ -13,6 +13,7 @@ const Jelovnik = () => {
   const [loading, setLoading] = useState(true);
   const { currentLanguage, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -36,6 +37,14 @@ const Jelovnik = () => {
     checkScroll();
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
+  }, []);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
   }, []);
 
   const tabs = [
@@ -231,7 +240,15 @@ const Jelovnik = () => {
         <span>{t('workingHoursNed')}</span>
       </div>
     </div>
-    <p className="text-center">© {new Date().getFullYear()} Ali Kebaba. {t('allRightsReserved')}</p>
+    <div className="flex justify-center items-center gap-4">
+      <p className="text-center">© {new Date().getFullYear()} Ali Kebaba. {t('allRightsReserved')}</p>
+      <a
+        href={isAuthenticated ? '/admin' : '/admin/login'}
+        className="px-4 py-2 bg-white text-[#7a1627] rounded-md hover:bg-gray-100 transition-colors"
+      >
+        {isAuthenticated ? 'Admin Panel' : 'Login'}
+      </a>
+    </div>
   </div>
 </footer>
     </main>

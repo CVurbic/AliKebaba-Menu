@@ -1,19 +1,20 @@
 import { useLanguage } from "../context/LanguageContext";
 
 // Define interfaces for our data structure
-interface MenuItem {
+export interface MenuItem {
     collection: string;
     external_id: string;
     product_name: string;
-    description?: string;
     image?: string;
     price: number;
     size?: string;
+    collection_order: number;
     // Add fields for translations
     product_name_en?: string;
     product_name_de?: string;
     description_en?: string;
     description_de?: string;
+    description_hr?: string;
 }
 
 interface MenuSectionProps {
