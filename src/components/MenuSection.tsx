@@ -10,10 +10,13 @@ export interface MenuItem {
     size?: string;
     collection_order: number;
     // Add fields for translations
+    product_name_hr?: string;
     product_name_en?: string;
     product_name_de?: string;
+    product_name_tr?: string;
     description_en?: string;
     description_de?: string;
+    description_tr?: string;
     description_hr?: string;
 }
 

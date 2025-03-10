@@ -1,19 +1,18 @@
 // languages.ts
-export type Language = 'hr' | 'en' | 'de' | 'tr';
+export type LanguageCode = 'hr' | 'en' | 'de' | 'tr' | string; 
 
 export const availableLanguages = [
-  { code: 'hr', name: 'Hrvatski' },
+  { code: 'hr', name: 'Hrvatski', source: true }, // HR kao izvorni jezik
   { code: 'en', name: 'English' },
   { code: 'de', name: 'Deutsch' },
-  { code: 'tr', name: 'Turkish' }
-];
+  { code: 'tr', name: 'Türkçe' }
+] as const;
 
-// Add this interface
-interface TranslationDictionary {
-    [key: string]: string;
-}
 
-export const translations: Record<Language, TranslationDictionary> = {
+export type Language = typeof availableLanguages[number]['code'];
+export type LanguageConfig = typeof availableLanguages[number];
+
+export const translations: Record<Language, Record<string, string>> = {
   hr: {
     // Menu categories
     STEAK: 'STEAK',

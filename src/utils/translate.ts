@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Microsoft Translator API Configuration
-const SUBSCRIPTION_KEY = import.meta.env.VITE_AZURE_KEY
+const SUBSCRIPTION_KEY = import.meta.env.VITE_AZURE_KEY;
 const ENDPOINT = "https://api.cognitive.microsofttranslator.com";
 const LOCATION = "germanywestcentral"; // Zamijeni ako koristiš specifičnu regiju
 
@@ -14,11 +14,11 @@ const LOCATION = "germanywestcentral"; // Zamijeni ako koristiš specifičnu reg
  */
 export async function translateText(
   text: string,
-  sourceLanguage: string = 'hr',
+  sourceLanguage: string = "hr",
   targetLanguage: string
 ): Promise<string> {
-  if (!text || text.trim() === '') {
-    return '';
+  if (!text || text.trim() === "") {
+    return "";
   }
 
   try {
@@ -36,7 +36,7 @@ export async function translateText(
 
     return response.data[0].translations[0].text;
   } catch (error) {
-    console.error('Translation error:', error);
+    console.error("Translation error:", error);
     return text;
   }
 }
@@ -51,37 +51,37 @@ export async function translateMenuItem(item: any): Promise<any> {
     const translationTasks = [
       // English translations
       {
-        sourceField: 'product_name',
-        targetField: 'product_name_en',
-        targetLang: 'en'
+        sourceField: "product_name",
+        targetField: "product_name_en",
+        targetLang: "en",
       },
       {
-        sourceField: 'description_hr',
-        targetField: 'description_en',
-        targetLang: 'en'
-      },
-      // German translations
-      {
-        sourceField: 'product_name',
-        targetField: 'product_name_de',
-        targetLang: 'de'
-      },
-      {
-        sourceField: 'description_hr',
-        targetField: 'description_de',
-        targetLang: 'de'
+        sourceField: "description_hr",
+        targetField: "description_en",
+        targetLang: "en",
       },
       // German translations
       {
-        sourceField: 'product_name',
-        targetField: 'product_name_tr',
-        targetLang: 'tr'
+        sourceField: "product_name",
+        targetField: "product_name_de",
+        targetLang: "de",
       },
       {
-        sourceField: 'description_tr',
-        targetField: 'description_tr',
-        targetLang: 'tr'
-      }
+        sourceField: "description_hr",
+        targetField: "description_de",
+        targetLang: "de",
+      },
+      // Turkish translations
+      {
+        sourceField: "product_name",
+        targetField: "product_name_tr",
+        targetLang: "tr",
+      },
+      {
+        sourceField: "description_hr",
+        targetField: "description_tr",
+        targetLang: "tr",
+      },
     ];
 
     // Pokreni prijevode paralelno
@@ -89,18 +89,18 @@ export async function translateMenuItem(item: any): Promise<any> {
       translationTasks.map(async (task) => {
         if (item[task.sourceField]) {
           const translatedText = await translateText(
-            item[task.sourceField], 
-            'hr', 
+            item[task.sourceField],
+            "hr",
             task.targetLang
           );
           return {
             field: task.targetField,
-            text: translatedText
+            text: translatedText,
           };
         }
         return {
           field: task.targetField,
-          text: ''
+          text: "",
         };
       })
     );
@@ -113,7 +113,7 @@ export async function translateMenuItem(item: any): Promise<any> {
 
     return translatedItem;
   } catch (error) {
-    console.error('Error translating menu item:', error);
+    console.error("Error translating menu item:", error);
     return item;
   }
 }
@@ -129,7 +129,7 @@ export async function isTranslationAvailable(): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    console.error('Microsoft Translator API unavailable:', error);
+    console.error("Microsoft Translator API unavailable:", error);
     return false;
   }
 }
