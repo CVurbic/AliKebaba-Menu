@@ -130,7 +130,6 @@ const MenuSection = ({ title, items }: MenuSectionProps) => {
 
     return (
         <div className="space-y-16">
-            <h3 className="text-4xl font-bold text-[#C41E3A] text-center">{title}</h3>
 
             {/* Standard items */}
             {Object.entries(standardGrouped).length > 0 && (

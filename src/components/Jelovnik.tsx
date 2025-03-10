@@ -180,7 +180,7 @@ const Jelovnik = () => {
             <div 
               ref={scrollContainerRef}
               onScroll={checkScroll}
-              className="flex lg:justify-center overflow-x-auto py-4 px-8 scrollbar-hide"
+              className="flex lg:justify-center overflow-x-auto p-4 scrollbar-hide"
             >
               {tabs.map((tab) => (
                 <button

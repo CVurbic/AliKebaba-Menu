@@ -128,26 +128,61 @@ const AdminPanel = () => {
   }
 
   // Save edited or new item
-  const saveItem = () => {
-    if (!editingItem) return
+const saveItem = async () => {
+  if (!editingItem) return;
 
+  try {
     if (isAddingNew) {
-      setMenuItems([...menuItems, editingItem])
+      // For new items, just insert
+      const { data, error } = await supabase
+        .from("jelovnik")
+        .insert(editingItem);
+
+      if (error) throw error;
+      if (data) setMenuItems([...menuItems, data[0] as MenuItem]);
     } else {
-      setMenuItems(menuItems.map((item) => (item.external_id === editingItem.external_id ? editingItem : item)))
+      // For existing items, update based on external_id
+      const { data, error } = await supabase
+        .from("jelovnik")
+        .update(editingItem)
+        .eq('external_id', editingItem.external_id);
+
+      if (error) throw error;
+      if (data) {
+        setMenuItems(menuItems.map(item => 
+          item.external_id === editingItem.external_id ? (data[0] as MenuItem) : item
+        ));
+      }
     }
 
-    setEditingItem(null)
-    setExpandedRowId(null)
-    setIsAddingNew(false)
+    setEditingItem(null);
+    setExpandedRowId(null);
+    setIsAddingNew(false);
+  } catch (err:any) {
+    setError("Greška pri spremanju: " + err.message);
   }
+};
 
   // Delete an item
-  const deleteItem = (id: string) => {
-    if (confirm("Are you sure you want to delete this item?")) {
-      setMenuItems(menuItems.filter((item) => item.external_id !== id))
+  const deleteItem = async (id: string) => {
+    if (!confirm("Jeste li sigurni?")) return;
+  
+    try {
+      // Obriši iz Supabasea
+      const { error } = await supabase
+        .from("jelovnik")
+        .delete()
+        .eq("external_id", id);
+  
+      if (error) throw error;
+  
+      // Ažuriraj lokalno stanje
+      setMenuItems(menuItems.filter(item => item.external_id !== id));
+  
+    } catch (err:any) {
+      setError("Greška pri brisanju: " + err.message);
     }
-  }
+  };
 
   // Start editing an item
   const startEditing = (item: MenuItem) => {
