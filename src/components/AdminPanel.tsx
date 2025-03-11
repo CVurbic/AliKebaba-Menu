@@ -813,7 +813,7 @@ const AdminPanel = () => {
                               <div className="font-medium text-gray-900">
                                 {item.product_name}
                               </div>
-                              <div className="text-sm text-gray-500 truncate overflow-hidden max-w-[200px]">
+                              <div className="text-sm text-gray-500 truncate overflow-hidden max-w-[200px] md:max-w-[40vw]">
                                 {item.description_hr}
                               </div>
                             </div>
