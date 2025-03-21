@@ -15,6 +15,9 @@ import {
   Trash2,
   X,
   Languages,
+  FileSpreadsheet,
+  Clock,
+  MapPin,
 } from "lucide-react";
 import { translateMenuItem, isTranslationAvailable } from "../utils/translate";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +25,8 @@ import React from "react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { availableLanguages } from "../services/language";
+import ExcelImportExport from "./ExcelImportExport";
+import WorkingHoursEditor from "./WorkingHoursEditor";
 
 export interface Subscription {
   channel: RealtimeChannel;
@@ -40,7 +45,9 @@ const availableCollections = [
   "NUGGETS",
   "NUGGETS MENU",
   "FALAFEL",
+  "FALAFEL MENU",
   "MOZZARELLA",
+  "MOZZARELLA MENU",
   "PRILOZI",
   "NAPITCI",
   "DESERT",
@@ -56,7 +63,7 @@ const AdminPanel = () => {
   const [error, setError] = useState("");
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
@@ -70,6 +77,10 @@ const AdminPanel = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationAvailable, setTranslationAvailable] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [showExcelImportExport, setShowExcelImportExport] = useState(false);
+  const [poslovnice, setPoslovnice] = useState([]);
+  const [poslovnica, setPoslovnica] = useState("");
+  const [showWorkingHoursEditor, setShowWorkingHoursEditor] = useState(false);
   const navigate = useNavigate();
 
   const newItemTemplate: MenuItem = {
@@ -138,9 +149,11 @@ const AdminPanel = () => {
       );
     }
 
-    // Apply category filter
-    if (filterCategory) {
-      result = result.filter((item) => item.collection === filterCategory);
+    // Apply category filter - updated to handle multiple categories
+    if (filterCategories.length > 0) {
+      result = result.filter((item) =>
+        filterCategories.includes(item.collection)
+      );
     }
 
     // Apply sorting
@@ -160,7 +173,7 @@ const AdminPanel = () => {
     }
 
     setFilteredItems(result);
-  }, [menuItems, searchTerm, filterCategory, sortConfig]);
+  }, [menuItems, searchTerm, filterCategories, sortConfig]);
 
   // Handle sorting
   const requestSort = (key: keyof MenuItem) => {
@@ -300,6 +313,22 @@ const AdminPanel = () => {
     // Initial fetch
     fetchItems();
 
+    const fetchLocations = async () => {
+      try {
+        const { data, error } = await supabase.from("lokacije").select("*");
+
+        if (error) throw error;
+        setPoslovnice(data as any);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Error fetching poslovnice"
+        );
+      }
+    };
+
+    // Call the fetch locations function
+    fetchLocations();
+
     // Set up real-time subscription
     const channel = supabase
       .channel("schema-db-changes")
@@ -355,6 +384,96 @@ const AdminPanel = () => {
       setError("Translation failed. Please try again.");
     } finally {
       setIsTranslating(false);
+    }
+  };
+
+  // Batch update function
+  const handleBatchSave = async (updatedItems: MenuItem[]) => {
+    try {
+      setLoading(true);
+
+      // Group items by what needs to be done (update only)
+      const itemsToUpdate = updatedItems.map((item) => ({
+        external_id: item.external_id,
+        collection: item.collection,
+        product_name: item.product_name,
+        product_name_en: item.product_name_en,
+        product_name_de: item.product_name_de,
+        product_name_tr: item.product_name_tr,
+        description_hr: item.description_hr,
+        description_en: item.description_en,
+        description_de: item.description_de,
+        description_tr: item.description_tr,
+        price: item.price,
+        collection_order: item.collection_order,
+        size: item.size,
+        image: item.image,
+      }));
+
+      // Instead of using upsert, perform an update for each item individually
+      // This avoids the ON CONFLICT issue
+      const promises = itemsToUpdate.map((item) =>
+        supabase
+          .from("jelovnik")
+          .update(item)
+          .eq("external_id", item.external_id)
+      );
+
+      const results = await Promise.all(promises);
+
+      // Check for errors
+      const errors = results.filter((r) => r.error);
+      if (errors.length > 0) {
+        console.error("Errors during update:", errors);
+        throw new Error(`Failed to update ${errors.length} items`);
+      }
+
+      // Update the local state with the new data
+      setMenuItems((prevItems) => {
+        const updatedItemMap = new Map(
+          updatedItems.map((item) => [item.external_id, item])
+        );
+
+        return prevItems.map((item) => {
+          const updatedItem = updatedItemMap.get(item.external_id);
+          return updatedItem || item;
+        });
+      });
+
+      setError("");
+    } catch (err: any) {
+      console.error("Batch update error:", err);
+      setError("Greška pri batch ažuriranju: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle a category in the selection
+  const toggleCategory = (category: string) => {
+    setFilterCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  // Clear all selected categories
+  const clearCategories = () => {
+    setFilterCategories([]);
+  };
+
+  // New handler for location data updates
+  const handleLocationsUpdated = async () => {
+    try {
+      const { data, error } = await supabase.from("lokacije").select("*");
+
+      if (error) throw error;
+      setPoslovnice(data as any);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Error refreshing locations"
+      );
     }
   };
 
@@ -459,45 +578,92 @@ const AdminPanel = () => {
               className="flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 focus:outline-none"
               onClick={() => setShowCategoryFilter(!showCategoryFilter)}
             >
-              <span>{filterCategory || "Sve Kategorije"}</span>
+              <span>
+                {filterCategories.length === 0
+                  ? "Sve Kategorije"
+                  : `${filterCategories.length} kategorije odabrano`}
+              </span>
               <ChevronDown className="ml-2 h-5 w-5" />
             </button>
 
             {showCategoryFilter && (
               <div className="absolute z-10 mt-1 max-h-60 w-64 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                <div
-                  className="cursor-pointer px-4 py-2 hover:bg-gray-100"
-                  onClick={() => {
-                    setFilterCategory("");
-                    setShowCategoryFilter(false);
-                  }}
-                >
-                  Sve Kategorije
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 font-medium">
+                  <div className="flex justify-between items-center">
+                    <span>Odaberi kategorije</span>
+                    <button
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                      onClick={clearCategories}
+                    >
+                      Očisti sve
+                    </button>
+                  </div>
                 </div>
+
                 {availableCollections.map((category) => (
                   <div
                     key={category}
-                    className="cursor-pointer px-4 py-2 hover:bg-gray-100"
-                    onClick={() => {
-                      setFilterCategory(category);
-                      setShowCategoryFilter(false);
-                    }}
+                    className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => toggleCategory(category)}
                   >
-                    {category}
+                    <input
+                      type="checkbox"
+                      className="mr-2 h-4 w-4 text-[#C41E3A] focus:ring-[#C41E3A]"
+                      checked={filterCategories.includes(category)}
+                      onChange={() => {}} // Handled by the div onClick
+                      id={`category-${category}`}
+                    />
+                    <label
+                      htmlFor={`category-${category}`}
+                      className="cursor-pointer flex-grow"
+                    >
+                      {category}
+                    </label>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Add new button */}
-          <button
-            className="flex items-center justify-center rounded-lg bg-[#C41E3A] px-4 py-2 text-white hover:bg-[#a01930] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/50"
-            onClick={startAddingNew}
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Dodaj novi artikl
-          </button>
+          <div className="flex gap-2">
+            {/* Working Hours Management button */}
+            <button
+              className="flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              onClick={() => setShowWorkingHoursEditor(true)}
+            >
+              <Clock className="mr-2 h-5 w-5" />
+              Radno vrijeme
+            </button>
+
+            {/* Location Management button - to add/edit/delete locations */}
+            <button
+              className="flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              onClick={() => {
+                /* Open location management dialog */
+              }}
+            >
+              <MapPin className="mr-2 h-5 w-5" />
+              Lokacije
+            </button>
+
+            {/* Excel import/export button */}
+            <button
+              className="flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+              onClick={() => setShowExcelImportExport(true)}
+            >
+              <FileSpreadsheet className="mr-2 h-5 w-5" />
+              Excel Import/Export
+            </button>
+
+            {/* Add new button */}
+            <button
+              className="flex items-center justify-center rounded-lg bg-[#C41E3A] px-4 py-2 text-white hover:bg-[#a01930] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]/50"
+              onClick={startAddingNew}
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Dodaj novi artikl
+            </button>
+          </div>
         </div>
 
         {/* Add new item form */}
@@ -731,6 +897,24 @@ const AdminPanel = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Working Hours Editor Modal */}
+        {showWorkingHoursEditor && (
+          <WorkingHoursEditor
+            locations={poslovnice}
+            onClose={() => setShowWorkingHoursEditor(false)}
+            onUpdateComplete={handleLocationsUpdated}
+          />
+        )}
+
+        {/* Excel Import/Export Modal */}
+        {showExcelImportExport && (
+          <ExcelImportExport
+            items={menuItems}
+            onClose={() => setShowExcelImportExport(false)}
+            onUploadComplete={handleBatchSave}
+          />
         )}
 
         {/* Items table */}

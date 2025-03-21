@@ -2,55 +2,122 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 12px;
-  }
-  
-  /* Track */
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #FDF6E9;
-    border-radius: 6px;
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Thumb */
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #E8D5B5, #D4B78F);
-    border-radius: 6px;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-  }
-  
-  /* Thumb hover effect */
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #D4B78F, #B8946E);
-    transform: scale(1.1);
-  }
-  
-  /* For Firefox */
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #E8D5B5 #FDF6E9;
-  }
+  width: 12px;
+}
 
+/* Track */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #fdf6e9;
+  border-radius: 6px;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+}
 
+/* Thumb */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #e8d5b5, #d4b78f);
+  border-radius: 6px;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
 
-  @media (max-width: 768px) {
-    .responsive-table th:nth-child(3), /* Sakrij stupac "Price" */
+/* Thumb hover effect */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #d4b78f, #b8946e);
+  transform: scale(1.1);
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e8d5b5 #fdf6e9;
+}
+
+@media (max-width: 768px) {
+  .responsive-table th:nth-child(3), /* Sakrij stupac "Price" */
     .responsive-table td:nth-child(3),
     .responsive-table th:nth-child(4), /* Sakrij stupac "Size" */
     .responsive-table td:nth-child(4) {
-      display: none;
-    }
-  
-    .responsive-table tr {
-      cursor: pointer;
-    }
-  
-    .responsive-table tr:hover {
-      background-color: #f5f5f5;
-    }
+    display: none;
   }
+
+  .responsive-table tr {
+    cursor: pointer;
+  }
+
+  .responsive-table tr:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+/* Excel import/export styles */
+.xlsx-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.xlsx-preview-table th {
+  background-color: #c41e3a;
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+  border-bottom: 2px solid #c41e3a;
+}
+
+.xlsx-preview-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.xlsx-preview-table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.xlsx-preview-table tr:hover {
+  background-color: #f3f4f6;
+}
+
+.xlsx-preview-table .error-cell {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left: 2px solid #ef4444;
+}
+
+/* Excel file dropzone */
+.excel-dropzone {
+  border: 2px dashed #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.excel-dropzone:hover {
+  border-color: #c41e3a;
+  background-color: #fdf2f2;
+}
+
+.excel-dropzone.drag-active {
+  border-color: #c41e3a;
+  background-color: #fdf2f2;
+}
+
+/* Notification Animation */
+.excel-notification {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

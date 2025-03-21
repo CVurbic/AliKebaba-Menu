@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import MenuSection from "./MenuSection";
-import { Clock, MapPin } from "lucide-react";
 import heroImage from "./heroImage.jpg";
 import logo from "../resources/LOGO Cjenik 1.png";
 import { useLanguage } from "../context/LanguageContext";
 import { availableLanguages } from "../services/language";
+import LocationsDisplayFooter from "./LocationsDisplayFooter";
 
 const Jelovnik = () => {
   const [menuData, setMenuData] = useState(null);
@@ -300,10 +300,10 @@ const Jelovnik = () => {
       {/* Menu content */}
       <div className="mx-auto max-w-7xl px-4 py-12">
         {menuData &&
-          Object.keys(menuData).map((category) => {
+          Object.keys(menuData).map((category, index) => {
             if (category === activeTab) {
               return (
-                <>
+                <React.Fragment key={index}>
                   {category === "steak" && (
                     <div className="text-[#C41E3A] w-full text-center mb-4 -mt-8 font-medium">
                       <span className="inline-block text-xl font-bold rounded-full py-2 px-6 bg-red-100 shadow-lg border border-red-200">
@@ -316,7 +316,7 @@ const Jelovnik = () => {
                     title={t(category.toUpperCase())}
                     items={menuData[category]}
                   />
-                </>
+                </React.Fragment>
               );
             }
             return null;
@@ -324,23 +324,15 @@ const Jelovnik = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#7a1627] py-8 text-white">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mb-8 grid gap-8 md:grid-cols-3">
-            <div className="flex items-center justify-center md:justify-start">
-              <MapPin className="mr-2 h-5 w-5" />
-              <span>{t("address")}</span>
-            </div>
-            <div></div>
-            <div className="flex flex-col items-center justify-center md:justify-start">
-              <Clock className="mr-2 h-5 w-5" />
-              <span>{t("workingHoursPonUto")}</span>
-              <span>{t("workingHoursSriCet")}</span>
-              <span>{t("workingHoursPetSub")}</span>
-              <span>{t("workingHoursNed")}</span>
-            </div>
+      <footer className="bg-[#7a1627] text-white">
+        <div className="mx-auto max-w-7xl px-4 py-8">
+          {/* Lokacije i radno vrijeme */}
+          <div className="mb-8">
+            <LocationsDisplayFooter />
           </div>
-          <div className="flex justify-center items-center gap-4">
+
+          {/* Donji dio footera - copyright i login */}
+          <div className="pt-6 border-t border-[#a0313e] flex justify-center items-center gap-4">
             <p className="text-center">
               © {new Date().getFullYear()} Ali Kebaba. {t("allRightsReserved")}
             </p>
