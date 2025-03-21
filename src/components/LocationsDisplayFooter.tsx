@@ -54,7 +54,7 @@ export default function LocationsDisplayFooter() {
           .from("lokacije")
           .select("*")
           .eq("active", true)
-          .order("id");
+          .order("id", { ascending: false });
 
         if (error) throw error;
 
@@ -81,10 +81,8 @@ export default function LocationsDisplayFooter() {
   const getSortedLocations = () => {
     if (!selectedLocation) return locations;
 
-    const selected = locations.find((loc) => loc.id === selectedLocation);
-    const others = locations.filter((loc) => loc.id !== selectedLocation);
-
-    return selected ? [selected, ...others] : locations;
+    // Vraćamo sve lokacije u izvornom redoslijedu za bolje animacije
+    return locations;
   };
 
   if (loading) {
@@ -108,19 +106,23 @@ export default function LocationsDisplayFooter() {
           {getSortedLocations().map((location) => (
             <button
               key={location.id}
-              className={`text-left px-4 py-2 rounded-md transition-colors flex flex-col ${
+              className={`text-left px-4 py-2 rounded-md transition-all duration-300 ease-in-out flex flex-col ${
                 selectedLocation === location.id
-                  ? "bg-white text-[#7a1627] font-medium"
+                  ? "bg-white text-[#7a1627] font-medium transform scale-102 shadow-md"
                   : "bg-[#a0313e] hover:bg-[#bb3748] text-white"
               }`}
               onClick={() => setSelectedLocation(location.id)}
             >
               <span className="font-medium">{location.lokacija}</span>
-              {selectedLocation === location.id && (
-                <span className="text-sm mt-1 text-[#7a1627]/80">
-                  {location.adresa}
-                </span>
-              )}
+              <span
+                className={`text-sm mt-1 overflow-hidden transition-all duration-300 ${
+                  selectedLocation === location.id
+                    ? "max-h-20 opacity-100 text-[#7a1627]/80"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                {location.adresa}
+              </span>
             </button>
           ))}
         </div>
