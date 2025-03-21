@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useDropzone } from "react-dropzone";
-import { supabase } from "../supabaseClient";
 import { MenuItem } from "./MenuSection";
 import {
   Download,

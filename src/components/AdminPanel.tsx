@@ -79,7 +79,6 @@ const AdminPanel = () => {
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [showExcelImportExport, setShowExcelImportExport] = useState(false);
   const [poslovnice, setPoslovnice] = useState([]);
-  const [poslovnica, setPoslovnica] = useState("");
   const [showWorkingHoursEditor, setShowWorkingHoursEditor] = useState(false);
   const navigate = useNavigate();
 
