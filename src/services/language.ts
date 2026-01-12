@@ -67,6 +67,16 @@ export const translations: Record<Language, Record<string, string>> = {
     viewAllLocations: "Prikaži sve lokacije",
     hideAllLocations: "Sakrij ostale lokacije",
     workingHours: "Radno vrijeme",
+    today: "Danas",
+    openNow: "Otvoreno",
+    closedNow: "Zatvoreno",
+    opensIn: "Otvara za",
+    closesIn: "Zatvara za",
+    opensAt: "Otvara u",
+    closesAt: "Zatvara u",
+    hourShort: "h",
+    minuteShort: "min",
+
   },
 
   en: {
@@ -124,6 +134,16 @@ export const translations: Record<Language, Record<string, string>> = {
     viewAllLocations: "View all locations",
     hideAllLocations: "Hide other locations",
     workingHours: "Working hours",
+    today: "Today",
+    openNow: "Open",
+    closedNow: "Closed",
+    opensIn: "Opens in",
+    closesIn: "Closes in",
+    opensAt: "Opens at",
+    closesAt: "Closes at",
+    hourShort: "h",
+    minuteShort: "min",
+
   },
 
   de: {
@@ -181,6 +201,16 @@ export const translations: Record<Language, Record<string, string>> = {
     viewAllLocations: "Alle Standorte anzeigen",
     hideAllLocations: "Andere Standorte ausblenden",
     workingHours: "Öffnungszeiten",
+    today: "Heute",
+    openNow: "Geöffnet",
+    closedNow: "Geschlossen",
+    opensIn: "Öffnet in",
+    closesIn: "Schließt in",
+    opensAt: "Öffnet um",
+    closesAt: "Schließt um",
+    hourShort: "Std",
+    minuteShort: "Min",
+
   },
 
   tr: {
@@ -238,5 +268,15 @@ export const translations: Record<Language, Record<string, string>> = {
     viewAllLocations: "Tüm şubeleri görüntüle",
     hideAllLocations: "Diğer şubeleri gizle",
     workingHours: "Çalışma saatleri",
+    today: "Bugün",
+    openNow: "Açık",
+    closedNow: "Kapalı",
+    opensIn: "Açılmasına",
+    closesIn: "Kapanmasına",
+    opensAt: "Saat",
+    closesAt: "Saat",
+    hourShort: "sa",
+    minuteShort: "dk",
+
   },
 };

@@ -311,20 +311,27 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
                                 <button onClick={() => toggleMobile(key)} className="w-full text-left relative overflow-hidden">
                                     {/* Background image layer */}
                                     {bg ? (
-                                        <img
-                                            src={bg}
-                                            alt=""
-                                            aria-hidden="true"
-                                            className={
-                                                "absolute inset-0 h-full w-full object-cover scale-[1.03] " +
-                                                (key === "napitci"
-                                                    ? " blur-[1.5px] brightness-[0.75] saturate-[1.05]"
-                                                    : " blur-[2px] brightness-[0.72] saturate-[1.12]")
-                                            }
-                                            style={{ objectPosition: pos }}
-                                            loading="lazy"
-                                        />
+                                        <div
+                                            className={classNames(
+                                                "absolute inset-0 px-16 sm:px-10 md:px-16"
+                                            )}
+                                        >
+                                            <img
+                                                src={bg}
+                                                alt=""
+                                                aria-hidden="true"
+                                                className={classNames(
+                                                    "h-full w-full object-cover scale-[1.03]",
+                                                    key === "napitci"
+                                                        ? "blur-[1.5px] brightness-[0.75] saturate-[1.05]"
+                                                        : "blur-[2px] brightness-[0.72] saturate-[1.12]"
+                                                )}
+                                                style={{ objectPosition: pos }}
+                                                loading="lazy"
+                                            />
+                                        </div>
                                     ) : null}
+
 
                                     {/* Overlays */}
                                     <div className="absolute inset-0 bg-black/35" />

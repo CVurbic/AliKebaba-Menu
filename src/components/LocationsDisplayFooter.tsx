@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../supabaseClient";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, ChevronDown } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
 interface WorkingHoursData {
@@ -21,13 +21,37 @@ interface Location {
   radno_vrijeme?: WorkingHoursData;
 }
 
+type DayKey = keyof WorkingHoursData;
+
+type Interval = { start: number; end: number }; // minute offset from today 00:00
+
 export default function LocationsDisplayFooter() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // “clock tick” da se refreshaju badge + “za koliko”
+  const [now, setNow] = useState(() => new Date());
+
   const { t } = useLanguage();
 
-  // Get day of week in local language
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const dayKeys = useMemo<DayKey[]>(
+    () => ["ponedjeljak", "utorak", "srijeda", "cetvrtak", "petak", "subota", "nedjelja"],
+    []
+  );
+
+  const todayKey: DayKey = useMemo(() => {
+    // JS: 0=Sun.6=Sat
+    const d = now.getDay();
+    const map: DayKey[] = ["nedjelja", "ponedjeljak", "utorak", "srijeda", "cetvrtak", "petak", "subota"];
+    return map[d];
+  }, [now]);
+
   const getDayName = (day: string) => {
     const dayMapping: Record<string, string> = {
       ponedjeljak: t("monday"),
@@ -38,13 +62,110 @@ export default function LocationsDisplayFooter() {
       subota: t("saturday"),
       nedjelja: t("sunday"),
     };
-
     return dayMapping[day] || day;
   };
 
-  // Format time to be more readable
   const formatTime = (time: string) => {
-    return time.replace(/:00$/, "h");
+    if (!time) return "";
+    const parts = time.split(":");
+    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : time;
+  };
+
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+
+  const toMinutes = (hhmm: string) => {
+    const [h, m] = (hhmm || "").split(":");
+    const hh = Number(h);
+    const mm = Number(m);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+    return hh * 60 + mm;
+  };
+
+  const startOfToday = useMemo(() => {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [now]);
+
+  const minutesToClock = (minutesFromToday: number) => {
+    const dt = new Date(startOfToday.getTime() + minutesFromToday * 60_000);
+    return `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+  };
+
+  const formatDuration = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+
+    const hShort = t("hourShort"); // npr. "h" / "Std" / "sa"
+    const mShort = t("minuteShort"); // "min" / "Min" / "dk"
+
+    if (h <= 0) return `${m}${mShort}`;
+    if (m <= 0) return `${h}${hShort}`;
+    return `${h}${hShort} ${m}${mShort}`;
+  };
+
+  const buildIntervalsNextDays = (rv: WorkingHoursData, daysToScan = 8): Interval[] => {
+    const intervals: Interval[] = [];
+
+    // index "today" unutar dayKeys
+    const todayIdx = dayKeys.indexOf(todayKey);
+
+    for (let k = 0; k < daysToScan; k++) {
+      const key = dayKeys[(todayIdx + k) % dayKeys.length];
+      const openMin = toMinutes(rv[key]?.otvaranje);
+      const closeMin = toMinutes(rv[key]?.zatvaranje);
+      if (openMin == null || closeMin == null) continue;
+
+      const base = k * 1440;
+
+      if (closeMin > openMin) {
+        // normalno unutar dana
+        intervals.push({ start: base + openMin, end: base + closeMin });
+      } else {
+        // preko ponoći: [open..24h) + [0..close) sljedeći dan
+        intervals.push({ start: base + openMin, end: base + 1440 });
+        intervals.push({ start: base + 1440 + 0, end: base + 1440 + closeMin });
+      }
+    }
+
+    // sort (za svaki slučaj)
+    intervals.sort((a, b) => a.start - b.start);
+    return intervals;
+  };
+
+  const getOpenInfo = (rv?: WorkingHoursData) => {
+    if (!rv) {
+      return { open: false, minutesToChange: null as number | null, changeAt: null as string | null, mode: "opens" as "opens" | "closes" };
+    }
+
+    const nowMin = now.getHours() * 60 + now.getMinutes(); // offset from today 00:00
+    const intervals = buildIntervalsNextDays(rv, 8);
+
+    // 1) jel sada unutar intervala?
+    const current = intervals.find((it) => nowMin >= it.start && nowMin < it.end);
+    if (current) {
+      const delta = Math.max(0, current.end - nowMin);
+      return {
+        open: true,
+        minutesToChange: delta,
+        changeAt: minutesToClock(current.end),
+        mode: "closes" as const,
+      };
+    }
+
+    // 2) inače nađi sljedeći start
+    const next = intervals.find((it) => it.start > nowMin);
+    if (!next) {
+      return { open: false, minutesToChange: null, changeAt: null, mode: "opens" as const };
+    }
+
+    const delta = Math.max(0, next.start - nowMin);
+    return {
+      open: false,
+      minutesToChange: delta,
+      changeAt: minutesToClock(next.start),
+      mode: "opens" as const,
+    };
   };
 
   useEffect(() => {
@@ -72,88 +193,158 @@ export default function LocationsDisplayFooter() {
     fetchLocations();
   }, []);
 
-  // Get selected location
-  const getSelectedLocation = () => {
-    return locations.find((loc) => loc.id === selectedLocation);
-  };
-
-  // Sort locations to put selected location first
-  const getSortedLocations = () => {
-    if (!selectedLocation) return locations;
-
-    // Vraćamo sve lokacije u izvornom redoslijedu za bolje animacije
-    return locations;
-  };
+  const selected = useMemo(
+    () => locations.find((loc) => loc.id === selectedLocation),
+    [locations, selectedLocation]
+  );
 
   if (loading) {
     return <div className="py-4 text-center text-white/80">{t("loading")}</div>;
   }
 
-  if (locations.length === 0) {
-    return null;
-  }
+  if (locations.length === 0) return null;
+
+  const HoursTable = () => {
+    if (!selected?.radno_vrijeme) return null;
+
+    return (
+      <div className="grid grid-cols-1 gap-1">
+        {Object.entries(selected.radno_vrijeme).map(([day, hours]) => {
+          const isToday = day === todayKey;
+          return (
+            <div
+              key={day}
+              className={[
+                "flex items-center justify-between rounded-lg px-3 py-2",
+                isToday ? "bg-white/10 border border-white/15" : "border border-transparent",
+              ].join(" ")}
+            >
+              <span className={["font-medium", isToday ? "text-white" : "text-white/90"].join(" ")}>
+                {getDayName(day)}
+                {isToday ? <span className="ml-2 text-xs text-white/70">({t("today")})</span> : null}
+              </span>
+              <span className="text-white/90 tabular-nums">
+                {formatTime(hours.otvaranje)} – {formatTime(hours.zatvaranje)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* LIJEVA STRANA - Lokacije */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Lokacije */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <MapPin className="h-5 w-5 text-white" />
           <h3 className="text-lg font-semibold">{t("ourLocations")}</h3>
         </div>
 
-        <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-2">
-          {getSortedLocations().map((location) => (
-            <button
-              key={location.id}
-              className={`text-left px-4 py-2 rounded-md transition-all duration-300 ease-in-out flex flex-col ${
-                selectedLocation === location.id
-                  ? "bg-white text-[#7a1627] font-medium transform scale-102 shadow-md"
-                  : "bg-[#a0313e] hover:bg-[#bb3748] text-white"
-              }`}
-              onClick={() => setSelectedLocation(location.id)}
-            >
-              <span className="font-medium">{location.lokacija}</span>
-              <span
-                className={`text-sm mt-1 overflow-hidden transition-all duration-300 ${
-                  selectedLocation === location.id
-                    ? "max-h-20 opacity-100 text-[#7a1627]/80"
-                    : "max-h-0 opacity-0"
-                }`}
+        <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-2">
+          {locations.map((location) => {
+            const active = selectedLocation === location.id;
+
+            const info = getOpenInfo(location.radno_vrijeme);
+            const openLabel = t("openNow");
+            const closedLabel = t("closedNow");
+
+            const secondaryText =
+              info.minutesToChange != null
+                ? info.mode === "closes"
+                  ? `${t("closesIn")} ${formatDuration(info.minutesToChange)}`
+                  : `${t("opensIn")} ${formatDuration(info.minutesToChange)}`
+                : "";
+
+            const tooltipText =
+              info.minutesToChange != null && info.changeAt
+                ? info.mode === "closes"
+                  ? `${t("closesAt")} ${info.changeAt}`
+                  : `${t("opensAt")} ${info.changeAt}`
+                : info.open
+                  ? openLabel
+                  : closedLabel;
+
+            return (
+              <button
+                key={location.id}
+                className={[
+                  "text-left rounded-xl px-4 py-3 transition-all border",
+                  active
+                    ? "bg-white text-[#6f1222] border-white/30 shadow-sm"
+                    : "bg-white/5 hover:bg-white/10 border-white/10 text-white",
+                ].join(" ")}
+                onClick={() => setSelectedLocation(location.id)}
               >
-                {location.adresa}
-              </span>
-            </button>
-          ))}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-semibold truncate">{location.lokacija}</div>
+
+                    <div className={["text-sm mt-1", active ? "text-[#6f1222]/70" : "text-white/70"].join(" ")}>
+                      {location.adresa}
+                    </div>
+                  </div>
+
+                  {/* OPEN/CLOSED BADGE */}
+                  <div className="flex flex-col items-center gap-2">
+                    <span
+                      className={[
+                        "shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
+                        info.open
+                          ? active
+                            ? "bg-emerald-500/15 text-emerald-700 border-emerald-500/30"
+                            : "bg-emerald-400/15 text-emerald-100 border-emerald-300/25"
+                          : active
+                            ? "bg-black/5 text-[#6f1222]/60 border-black/10"
+                            : "bg-white/10 text-white/70 border-white/15",
+                      ].join(" ")}
+                      title={tooltipText}
+                    >
+                      {info.open ? openLabel : closedLabel}
+                    </span>
+                    {/* “Zatvara za … / Otvara za …” */}
+                    {secondaryText ? (
+                      <div className={["text-xs mt-0.5", active ? "text-[#6f1222]/70" : "text-white/70"].join(" ")}>
+                        {secondaryText}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* DESNA STRANA - Radno vrijeme */}
-      {getSelectedLocation()?.radno_vrijeme && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
+      {/* Radno vrijeme */}
+      <div>
+        <div className="hidden md:block">
+          <div className="flex items-center gap-2 mb-3">
             <Clock className="h-5 w-5 text-white" />
             <h3 className="text-lg font-semibold">{t("workingHours")}</h3>
           </div>
-
-          <div className="grid grid-cols-1 gap-1">
-            {Object.entries(getSelectedLocation()!.radno_vrijeme!).map(
-              ([day, hours]) => (
-                <div
-                  key={day}
-                  className="flex items-center justify-between border-b border-[#a0313e] py-1"
-                >
-                  <span className="font-medium">{getDayName(day)}</span>
-                  <span className="text-white/90">
-                    {formatTime(hours.otvaranje)} -{" "}
-                    {formatTime(hours.zatvaranje)}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
+          <HoursTable />
         </div>
-      )}
+
+        {/* Mobile accordion */}
+        <div className="md:hidden">
+          <details className="group rounded-xl border border-white/10 bg-white/5">
+            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-white" />
+                <span className="font-semibold">{t("workingHours")}</span>
+              </div>
+              <ChevronDown className="h-5 w-5 text-white/80 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="px-4 pb-4 pt-1">
+              <HoursTable />
+            </div>
+          </details>
+        </div>
+      </div>
     </div>
   );
 }
