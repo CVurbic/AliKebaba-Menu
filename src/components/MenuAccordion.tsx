@@ -313,7 +313,7 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
                                     {bg ? (
                                         <div
                                             className={classNames(
-                                                "absolute inset-0 px-16 sm:px-10 md:px-16"
+                                                "absolute inset-0 px-8 sm:px-10 md:px-16"
                                             )}
                                         >
                                             <img
