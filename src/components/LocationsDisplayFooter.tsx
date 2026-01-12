@@ -242,7 +242,7 @@ export default function LocationsDisplayFooter() {
           <h3 className="text-lg font-semibold">{t("ourLocations")}</h3>
         </div>
 
-        <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-2">
+        <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto ">
           {locations.map((location) => {
             const active = selectedLocation === location.id;
 
