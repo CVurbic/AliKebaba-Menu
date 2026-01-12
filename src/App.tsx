@@ -1,9 +1,9 @@
 // App.tsx
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Jelovnik from "./components/Jelovnik";
-import AdminPanel from "./components/AdminPanel";
 import AdminLogin from "./components/AdminLogin";
 import { LanguageProvider } from './context/LanguageContext';
+import AdminApp from './components/admin/AdminApp';
 
 function App() {
   return (
@@ -11,8 +11,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Jelovnik />} />
-          <Route path="/admin" element={<AdminPanel />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/*" element={<AdminApp />} />
         </Routes>
       </Router>
     </LanguageProvider>
