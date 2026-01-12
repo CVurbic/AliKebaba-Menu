@@ -201,28 +201,30 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
 
                                 {/* Content */}
                                 <div className="relative p-5 text-white min-h-[128px] flex flex-col justify-between">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <div className="font-bold tracking-wide text-[18px]">
-                                                {t(key.toUpperCase())}
-                                            </div>
+                                    <div className="flex  items-start justify-between gap-3">
+                                        <div className="flex flex-col">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <div className="font-bold tracking-wide text-[18px]">
+                                                    {t(key.toUpperCase())}
+                                                </div>
 
-                                            <div className="text-xs bg-white/15 px-2 py-1 rounded-full backdrop-blur-[2px]">
-                                                {formatItemsCount(count)}
-                                            </div>
-
-                                            {key === "steak" ? (
                                                 <div className="text-xs bg-white/15 px-2 py-1 rounded-full backdrop-blur-[2px]">
-                                                    {t("steakWeekendOnly")}
+                                                    {formatItemsCount(count)}
+                                                </div>
+
+                                                {key === "steak" ? (
+                                                    <div className="text-xs bg-white/15 px-2 py-1 rounded-full backdrop-blur-[2px]">
+                                                        {t("steakWeekendOnly")}
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                            {/* Opis kategorije */}
+                                            {getCategoryDescription(key) ? (
+                                                <div className="mt-4 text-white/80 text-sm leading-snug line-clamp-2">
+                                                    {getCategoryDescription(key)}
                                                 </div>
                                             ) : null}
                                         </div>
-                                        {/* Opis kategorije */}
-                                        {getCategoryDescription(key) ? (
-                                            <div className="mt-2 text-white/80 text-sm leading-snug line-clamp-2">
-                                                {getCategoryDescription(key)}
-                                            </div>
-                                        ) : null}
                                         <div
                                             className={classNames(
                                                 "text-white/90 transition-transform duration-200",
@@ -234,9 +236,7 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
                                         </div>
                                     </div>
 
-                                    <div className="text-white/80 text-sm">
-                                        {isActive ? t("selected") : t("open")}
-                                    </div>
+
                                 </div>
                             </button>
                         );
