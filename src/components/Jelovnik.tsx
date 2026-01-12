@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import heroImage from "./heroImage.jpg";
-import logo from "../resources/LOGO Cjenik 1.png";
+import logo from "../resources/LOGO Cjenik 1.png"
 import { useLanguage } from "../context/LanguageContext";
 import { availableLanguages } from "../services/language";
 import LocationsDisplayFooter from "./LocationsDisplayFooter";
@@ -14,7 +14,7 @@ type HeaderProps = {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   currentLanguage: string;
-  setLanguage: (lang: "hr" | "en" | "de") => void;
+  setLanguage: (lang: "hr" | "en" | "de" | "tr") => void;
   t: (key: string) => string;
 };
 
@@ -23,32 +23,18 @@ type FooterProps = {
   t: (key: string) => string;
 };
 
-function HeroHeader({
-  heroImage,
-  isOpen,
-  setIsOpen,
-  currentLanguage,
-  setLanguage,
-  t,
-}: HeaderProps) {
+function HeroHeader({ heroImage, isOpen, setIsOpen, currentLanguage, setLanguage, t }: HeaderProps) {
   return (
-    <div className="relative h-[40vh] md:h-[60vh] w-full  bg-[#C41E3A]">
-      <img
-        src={heroImage}
-        alt="Ali Kebaba restaurant"
-        className="object-cover w-full h-full brightness-75"
-      />
+    <div className="relative h-[40vh] md:h-[60vh] w-full bg-[#C41E3A]">
+      <img src={heroImage} alt="Ali Kebaba restaurant" className="object-cover w-full h-full brightness-75" />
 
-      {/* Language selector */}
       <div className="absolute top-4 right-4 z-10">
         <div className="relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md px-4 py-2 text-[#C41E3A] font-medium hover:bg-white/90 transition-colors flex items-center space-x-2"
           >
-            <span>
-              {availableLanguages.find((lang) => lang.code === currentLanguage)?.name}
-            </span>
+            <span>{availableLanguages.find((lang) => lang.code === currentLanguage)?.name}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -69,12 +55,10 @@ function HeroHeader({
                 <button
                   key={lang.code}
                   onClick={() => {
-                    setLanguage(lang.code as "hr" | "en" | "de");
+                    setLanguage(lang.code as "hr" | "en" | "de" | "tr");
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors ${currentLanguage === lang.code
-                    ? "text-[#C41E3A] font-medium"
-                    : "text-gray-700"
+                  className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors ${currentLanguage === lang.code ? "text-[#C41E3A] font-medium" : "text-gray-700"
                     }`}
                 >
                   {lang.name}
@@ -85,20 +69,15 @@ function HeroHeader({
         </div>
       </div>
 
-      {/* Logo (optional) */}
-      <img
-        src={logo}
-        alt="AliKebaba Logo"
-        className=" md:block absolute -bottom-8 left-6 w-32  drop-shadow-lg"
-      />
+      <img src={logo} alt="AliKebaba Logo" className="md:block absolute -bottom-8 left-6 w-32 drop-shadow-lg" />
     </div>
   );
 }
 
-function MenuContent({ menuData, t }: { menuData: MenuData; t: (key: string) => string }) {
+function MenuContent({ menuData }: { menuData: MenuData }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
-      <MenuAccordion menuData={menuData} t={t} defaultOpenKey="classic" />
+      <MenuAccordion menuData={menuData} defaultOpenKey="classic" />
     </div>
   );
 }
@@ -115,11 +94,12 @@ function Footer({ isAuthenticated, t }: FooterProps) {
           <p className="text-center">
             © {new Date().getFullYear()} Ali Kebaba. {t("allRightsReserved")}
           </p>
+
           <a
             href={isAuthenticated ? "/admin" : "/admin/login"}
             className="px-4 py-2 bg-white text-[#7a1627] rounded-md hover:bg-gray-100 transition-colors"
           >
-            {isAuthenticated ? "Admin Panel" : "Login"}
+            {isAuthenticated ? t("adminPanel") : t("login")}
           </a>
         </div>
       </div>
@@ -137,8 +117,8 @@ const Jelovnik = () => {
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("preferredLanguage");
-    if (savedLanguage && ["hr", "en", "de"].includes(savedLanguage)) {
-      setLanguage(savedLanguage as "hr" | "en" | "de");
+    if (savedLanguage && ["hr", "en", "de", "tr"].includes(savedLanguage)) {
+      setLanguage(savedLanguage as "hr" | "en" | "de" | "tr");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -154,45 +134,11 @@ const Jelovnik = () => {
   }, []);
 
   useEffect(() => {
-    const cacheImages = async () => {
-      if ("caches" in window) {
-        try {
-          const cache = await caches.open("ali-kebaba-images");
-          const imagesToCache = [heroImage, logo];
-
-          const uncachedImages = await Promise.all(
-            imagesToCache.map(async (imageUrl) => {
-              const match = await cache.match(imageUrl);
-              return match ? null : imageUrl;
-            })
-          );
-
-          const imagesToAdd = uncachedImages.filter(Boolean);
-          if (imagesToAdd.length > 0) {
-            await Promise.all(
-              imagesToAdd.map(
-                (imageUrl) =>
-                  imageUrl &&
-                  fetch(imageUrl).then((response) => cache.put(imageUrl, response))
-              )
-            );
-          }
-        } catch (error) {
-          console.error("Failed to cache images:", error);
-        }
-      }
-    };
-
-    cacheImages();
-  }, []);
-
-  useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        const { data, error } = await supabase
-          .from("jelovnik")
-          .select("*")
-          .order("collection_order", { ascending: true });
+        const { data, error } = await supabase.from("jelovnik").select("*").order("collection_order", {
+          ascending: true,
+        });
 
         if (error) throw error;
 
@@ -223,9 +169,7 @@ const Jelovnik = () => {
         DESERT: "desert",
       };
 
-      const key = Object.entries(collectionMap).find(([collection]) =>
-        (item.collection || "").startsWith(collection)
-      )?.[1];
+      const key = Object.entries(collectionMap).find(([collection]) => (item.collection || "").startsWith(collection))?.[1];
 
       if (key) {
         if (!acc[key]) acc[key] = [];
@@ -239,17 +183,16 @@ const Jelovnik = () => {
 
   return (
     <main className="min-h-screen w-full bg-white">
-      {/* Mobile i Desktop mogu biti isti layout */}
       <HeroHeader
         heroImage={heroImage}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         currentLanguage={currentLanguage}
-        setLanguage={setLanguage}
+        setLanguage={setLanguage as any}
         t={t}
       />
 
-      <MenuContent menuData={menuData} t={t} />
+      <MenuContent menuData={menuData} />
 
       <Footer isAuthenticated={isAuthenticated} t={t} />
     </main>

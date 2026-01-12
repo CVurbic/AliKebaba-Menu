@@ -31,12 +31,25 @@ export const translations: Record<Language, Record<string, string>> = {
     drinkOfChoice: "Piće po izboru",
     allRightsReserved: "Sva prava pridržana.",
 
+    // Common buttons/labels
+    adminPanel: "Admin panel",
+    login: "Prijava",
+
+    // “items” plural forms
+    items_one: "stavka",
+    items_few: "stavke",
+    items_many: "stavki",
+    items_other: "stavki",
+
+    // Notes
+    steakWeekendOnly: "Dostupno samo vikendom (petak, subota) - Langov trg",
+
     // Sizes
     Regular: "Regular",
     Veliki: "Veliki",
     Mali: "Mali",
 
-    //footer
+    // footer
     address: "Trg Josipa Langa 7, Zagreb",
     workingHoursPonUto: "Pon-Uto: 09-01h",
     workingHoursSriCet: "Sri-Čet: 09-02h",
@@ -55,6 +68,7 @@ export const translations: Record<Language, Record<string, string>> = {
     hideAllLocations: "Sakrij ostale lokacije",
     workingHours: "Radno vrijeme",
   },
+
   en: {
     // Menu categories
     STEAK: "STEAK",
@@ -74,12 +88,25 @@ export const translations: Record<Language, Record<string, string>> = {
     drinkOfChoice: "Drink of your choice",
     allRightsReserved: "All rights reserved.",
 
+    // Common buttons/labels
+    adminPanel: "Admin panel",
+    login: "Login",
+
+    // “items” plural forms
+    items_one: "item",
+    items_few: "items",
+    items_many: "items",
+    items_other: "items",
+
+    // Notes
+    steakWeekendOnly: "Available weekends only (Fri, Sat) – Langov Trg",
+
     // Sizes
     Regular: "Regular",
     Veliki: "Large",
     Mali: "Small",
 
-    //footer
+    // footer
     address: "Josip Lang Square 7, Zagreb",
     workingHoursPonUto: "Mon-Tue: 09-01h",
     workingHoursSriCet: "Wed-Thu: 09-02h",
@@ -98,6 +125,7 @@ export const translations: Record<Language, Record<string, string>> = {
     hideAllLocations: "Hide other locations",
     workingHours: "Working hours",
   },
+
   de: {
     // Menu categories
     STEAK: "STEAK",
@@ -117,12 +145,25 @@ export const translations: Record<Language, Record<string, string>> = {
     drinkOfChoice: "Getränk nach Wahl",
     allRightsReserved: "Alle Rechte vorbehalten.",
 
+    // Common buttons/labels
+    adminPanel: "Adminbereich",
+    login: "Anmelden",
+
+    // “items” plural forms
+    items_one: "Artikel",
+    items_few: "Artikel",
+    items_many: "Artikel",
+    items_other: "Artikel",
+
+    // Notes
+    steakWeekendOnly: "Nur am Wochenende verfügbar (Fr, Sa) – Langov Trg",
+
     // Sizes
     Regular: "Regular",
     Veliki: "Groß",
     Mali: "Klein",
 
-    //footer
+    // footer
     address: "Josip Lang Platz 7, Zagreb",
     workingHoursPonUto: "Mo-Di: 09-01h",
     workingHoursSriCet: "Mi-Do: 09-02h",
@@ -141,6 +182,7 @@ export const translations: Record<Language, Record<string, string>> = {
     hideAllLocations: "Andere Standorte ausblenden",
     workingHours: "Öffnungszeiten",
   },
+
   tr: {
     // Menu categories
     STEAK: "ŞİŞ",
@@ -156,17 +198,29 @@ export const translations: Record<Language, Record<string, string>> = {
     // UI elements
     loading: "Yükleniyor...",
     menuOffer: "MENÜ TEKLİFİ",
-    sweetPotatoOption:
-      "Normal patates kızartması yerine tatlı patates kızartması",
+    sweetPotatoOption: "Normal patates kızartması yerine tatlı patates kızartması",
     drinkOfChoice: "Seçilen İçecek",
     allRightsReserved: "Tüm hakları saklıdır.",
+
+    // Common buttons/labels
+    adminPanel: "Admin paneli",
+    login: "Giriş",
+
+    // “items” plural forms
+    items_one: "ürün",
+    items_few: "ürün",
+    items_many: "ürün",
+    items_other: "ürün",
+
+    // Notes
+    steakWeekendOnly: "Sadece hafta sonu (Cum, Cmt) – Langov Trg",
 
     // Sizes
     Regular: "Regular",
     Veliki: "Büyük",
     Mali: "Küçük",
 
-    //footer
+    // footer
     address: "Josip Lang Meydanı 7, Zagreb",
     workingHoursPonUto: "Pzt-Sal: 09-01",
     workingHoursSriCet: "Çar-Per: 09-02",

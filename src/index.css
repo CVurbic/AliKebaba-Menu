@@ -35,10 +35,13 @@
 }
 
 @media (max-width: 768px) {
-  .responsive-table th:nth-child(3), /* Sakrij stupac "Price" */
-    .responsive-table td:nth-child(3),
-    .responsive-table th:nth-child(4), /* Sakrij stupac "Size" */
-    .responsive-table td:nth-child(4) {
+
+  .responsive-table th:nth-child(3),
+  /* Sakrij stupac "Price" */
+  .responsive-table td:nth-child(3),
+  .responsive-table th:nth-child(4),
+  /* Sakrij stupac "Size" */
+  .responsive-table td:nth-child(4) {
     display: none;
   }
 
@@ -116,8 +119,53 @@
     transform: translateY(-10px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+
+@keyframes akFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes akFadeSection {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes akShimmer {
+  from {
+    background-position: -200% 0;
+  }
+
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* PRO: poštuj reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
