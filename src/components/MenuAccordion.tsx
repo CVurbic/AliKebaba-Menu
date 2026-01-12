@@ -47,6 +47,18 @@ const BG_POSITION: Record<string, string> = {
     desert: "60% 52%",
     napitci: "52% 50%",
 };
+const CATEGORY_DESC_FALLBACK: Record<string, string> = {
+    steak: "100% juneći odresci.",
+    classic: "Provjereni klasici s junetinom.",
+    chicken: "Sočna piletina.",
+    mix: "Kombinacija junetine i piletine.",
+    nuggets: "Hrskavi pileći nuggets.",
+    vege: "Bez mesa, ali punog okusa.",
+    prilozi: "Pomfrit, salate i dodaci.",
+    desert: "Slatki završetak obroka.",
+    napitci: "Osvježenje uz svaki obrok.",
+};
+
 
 function classNames(...xs: Array<string | false | undefined | null>) {
     return xs.filter(Boolean).join(" ");
@@ -74,6 +86,16 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
     }, [menuData]);
     const desktopOpenRef = useRef<HTMLDivElement | null>(null);
     const mobileItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    function getCategoryDescription(key: string) {
+        // ako dodaš prijevode u LanguageContext, samo će proradit
+        const fromI18n = t(`category.${key}.desc`);
+        // ako t() vraća key kad nema prijevoda (često tako bude), uhvati to:
+        if (fromI18n && fromI18n !== `category.${key}.desc`) return fromI18n;
+
+        return CATEGORY_DESC_FALLBACK[key] || "";
+    }
+
 
     function toggleMobile(key: string) {
         setOpenKey((prev) => {
@@ -195,7 +217,12 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
                                                 </div>
                                             ) : null}
                                         </div>
-
+                                        {/* Opis kategorije */}
+                                        {getCategoryDescription(key) ? (
+                                            <div className="mt-2 text-white/80 text-sm leading-snug line-clamp-2">
+                                                {getCategoryDescription(key)}
+                                            </div>
+                                        ) : null}
                                         <div
                                             className={classNames(
                                                 "text-white/90 transition-transform duration-200",
@@ -313,7 +340,8 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
                                     {bg ? (
                                         <div
                                             className={classNames(
-                                                "absolute inset-0 px-8 sm:px-10 md:px-16"
+                                                "absolute inset-0",
+                                                key === "napitci" && "px-16 sm:px-10 md:px-16"
                                             )}
                                         >
                                             <img
@@ -368,7 +396,14 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: 
                                         </div>
 
                                         {/* Suptilna linija samo na mobu */}
+
                                         <div className="mt-3 h-px w-full bg-white/10" />
+
+                                        {getCategoryDescription(key) ? (
+                                            <div className="mt-2 text-white/80 text-[13px] leading-snug line-clamp-2">
+                                                {getCategoryDescription(key)}
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </button>
 
