@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import { MapPin, Clock, ChevronDown } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 interface WorkingHoursData {
   ponedjeljak: { otvaranje: string; zatvaranje: string };
@@ -22,13 +23,27 @@ interface Location {
 }
 
 type DayKey = keyof WorkingHoursData;
-
 type Interval = { start: number; end: number }; // minute offset from today 00:00
 
-export default function LocationsDisplayFooter() {
+function slugify(input: string) {
+  return (input || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export default function LocationsDisplayFooter({
+  activeBranchSlug,
+}: {
+  activeBranchSlug?: string;
+}) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   // “clock tick” da se refreshaju badge + “za koliko”
   const [now, setNow] = useState(() => new Date());
@@ -46,7 +61,7 @@ export default function LocationsDisplayFooter() {
   );
 
   const todayKey: DayKey = useMemo(() => {
-    // JS: 0=Sun.6=Sat
+    // JS: 0=Sun..6=Sat
     const d = now.getDay();
     const map: DayKey[] = ["nedjelja", "ponedjeljak", "utorak", "srijeda", "cetvrtak", "petak", "subota"];
     return map[d];
@@ -96,8 +111,8 @@ export default function LocationsDisplayFooter() {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
 
-    const hShort = t("hourShort"); // npr. "h" / "Std" / "sa"
-    const mShort = t("minuteShort"); // "min" / "Min" / "dk"
+    const hShort = t("hourShort");
+    const mShort = t("minuteShort");
 
     if (h <= 0) return `${m}${mShort}`;
     if (m <= 0) return `${h}${hShort}`;
@@ -107,7 +122,6 @@ export default function LocationsDisplayFooter() {
   const buildIntervalsNextDays = (rv: WorkingHoursData, daysToScan = 8): Interval[] => {
     const intervals: Interval[] = [];
 
-    // index "today" unutar dayKeys
     const todayIdx = dayKeys.indexOf(todayKey);
 
     for (let k = 0; k < daysToScan; k++) {
@@ -119,16 +133,13 @@ export default function LocationsDisplayFooter() {
       const base = k * 1440;
 
       if (closeMin > openMin) {
-        // normalno unutar dana
         intervals.push({ start: base + openMin, end: base + closeMin });
       } else {
-        // preko ponoći: [open..24h) + [0..close) sljedeći dan
         intervals.push({ start: base + openMin, end: base + 1440 });
         intervals.push({ start: base + 1440 + 0, end: base + 1440 + closeMin });
       }
     }
 
-    // sort (za svaki slučaj)
     intervals.sort((a, b) => a.start - b.start);
     return intervals;
   };
@@ -138,10 +149,9 @@ export default function LocationsDisplayFooter() {
       return { open: false, minutesToChange: null as number | null, changeAt: null as string | null, mode: "opens" as "opens" | "closes" };
     }
 
-    const nowMin = now.getHours() * 60 + now.getMinutes(); // offset from today 00:00
+    const nowMin = now.getHours() * 60 + now.getMinutes();
     const intervals = buildIntervalsNextDays(rv, 8);
 
-    // 1) jel sada unutar intervala?
     const current = intervals.find((it) => nowMin >= it.start && nowMin < it.end);
     if (current) {
       const delta = Math.max(0, current.end - nowMin);
@@ -153,7 +163,6 @@ export default function LocationsDisplayFooter() {
       };
     }
 
-    // 2) inače nađi sljedeći start
     const next = intervals.find((it) => it.start > nowMin);
     if (!next) {
       return { open: false, minutesToChange: null, changeAt: null, mode: "opens" as const };
@@ -181,7 +190,14 @@ export default function LocationsDisplayFooter() {
 
         if (data && data.length > 0) {
           setLocations(data);
-          setSelectedLocation(data[0].id);
+
+          // default selekcija: prema URL slugu ako postoji
+          const bySlug =
+            activeBranchSlug
+              ? data.find((l: any) => slugify(l.lokacija) === activeBranchSlug)
+              : null;
+
+          setSelectedLocation((bySlug || data[0]).id);
         }
       } catch (err) {
         console.error("Error fetching locations:", err);
@@ -191,7 +207,8 @@ export default function LocationsDisplayFooter() {
     };
 
     fetchLocations();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBranchSlug]);
 
   const selected = useMemo(
     () => locations.find((loc) => loc.id === selectedLocation),
@@ -233,6 +250,11 @@ export default function LocationsDisplayFooter() {
     );
   };
 
+  const goToBranch = (location: Location) => {
+    const slug = slugify(location.lokacija);
+    navigate(`/${slug}`);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Lokacije */}
@@ -242,7 +264,7 @@ export default function LocationsDisplayFooter() {
           <h3 className="text-lg font-semibold">{t("ourLocations")}</h3>
         </div>
 
-        <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto ">
+        <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto">
           {locations.map((location) => {
             const active = selectedLocation === location.id;
 
@@ -263,8 +285,8 @@ export default function LocationsDisplayFooter() {
                   ? `${t("closesAt")} ${info.changeAt}`
                   : `${t("opensAt")} ${info.changeAt}`
                 : info.open
-                  ? openLabel
-                  : closedLabel;
+                ? openLabel
+                : closedLabel;
 
             return (
               <button
@@ -273,9 +295,12 @@ export default function LocationsDisplayFooter() {
                   "text-left rounded-xl px-4 py-3 transition-all border",
                   active
                     ? "bg-white text-[#6f1222] border-white/30 shadow-sm"
-                    : "bg-white/5 hover:bg-white/10 border-white/10 text-white",
+                    : "bg-white/10 hover:bg-white/10 border-white/10 text-white",
                 ].join(" ")}
-                onClick={() => setSelectedLocation(location.id)}
+                onClick={() => {
+                  setSelectedLocation(location.id);
+                  goToBranch(location); // ✅ vodi na /:branchSlug
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -286,7 +311,6 @@ export default function LocationsDisplayFooter() {
                     </div>
                   </div>
 
-                  {/* OPEN/CLOSED BADGE */}
                   <div className="flex flex-col items-center gap-2">
                     <span
                       className={[
@@ -296,14 +320,14 @@ export default function LocationsDisplayFooter() {
                             ? "bg-emerald-500/15 text-emerald-700 border-emerald-500/30"
                             : "bg-emerald-400/15 text-emerald-100 border-emerald-300/25"
                           : active
-                            ? "bg-black/5 text-[#6f1222]/60 border-black/10"
-                            : "bg-white/10 text-white/70 border-white/15",
+                          ? "bg-black/5 text-[#6f1222]/60 border-black/10"
+                          : "bg-white/10 text-white/70 border-white/15",
                       ].join(" ")}
                       title={tooltipText}
                     >
                       {info.open ? openLabel : closedLabel}
                     </span>
-                    {/* “Zatvara za … / Otvara za …” */}
+
                     {secondaryText ? (
                       <div className={["text-xs mt-0.5", active ? "text-[#6f1222]/70" : "text-white/70"].join(" ")}>
                         {secondaryText}
@@ -311,8 +335,6 @@ export default function LocationsDisplayFooter() {
                     ) : null}
                   </div>
                 </div>
-
-
               </button>
             );
           })}

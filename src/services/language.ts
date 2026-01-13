@@ -49,6 +49,9 @@ export const translations: Record<Language, Record<string, string>> = {
     Veliki: "Veliki",
     Mali: "Mali",
 
+    // MenuInstructions
+    chooseCategory: "Odaberi kategoriju",
+
     // footer
     address: "Trg Josipa Langa 7, Zagreb",
     workingHoursPonUto: "Pon-Uto: 09-01h",
@@ -63,6 +66,7 @@ export const translations: Record<Language, Record<string, string>> = {
     saturday: "Subota",
     sunday: "Nedjelja",
     ourLocations: "Naše lokacije",
+    currentLocation: "Trenutna lokacija",
     selectLocation: "Odaberite lokaciju",
     viewAllLocations: "Prikaži sve lokacije",
     hideAllLocations: "Sakrij ostale lokacije",
@@ -116,6 +120,10 @@ export const translations: Record<Language, Record<string, string>> = {
     Veliki: "Large",
     Mali: "Small",
 
+    
+    // MenuInstructions
+    chooseCategory: "Choose category",
+
     // footer
     address: "Josip Lang Square 7, Zagreb",
     workingHoursPonUto: "Mon-Tue: 09-01h",
@@ -130,6 +138,7 @@ export const translations: Record<Language, Record<string, string>> = {
     saturday: "Saturday",
     sunday: "Sunday",
     ourLocations: "Our Locations",
+    currentLocation: "Current Location",
     selectLocation: "Select Location",
     viewAllLocations: "View all locations",
     hideAllLocations: "Hide other locations",
@@ -182,6 +191,9 @@ export const translations: Record<Language, Record<string, string>> = {
     Regular: "Regular",
     Veliki: "Groß",
     Mali: "Klein",
+    
+    // MenuInstructions
+    chooseCategory: "Kategorie auswhlen",
 
     // footer
     address: "Josip Lang Platz 7, Zagreb",
@@ -197,6 +209,7 @@ export const translations: Record<Language, Record<string, string>> = {
     saturday: "Samstag",
     sunday: "Sonntag",
     ourLocations: "Unsere Standorte",
+    currentLocation: "Aktuelles Standort",
     selectLocation: "Standort auswählen",
     viewAllLocations: "Alle Standorte anzeigen",
     hideAllLocations: "Andere Standorte ausblenden",
@@ -249,6 +262,9 @@ export const translations: Record<Language, Record<string, string>> = {
     Regular: "Regular",
     Veliki: "Büyük",
     Mali: "Küçük",
+    
+    // MenuInstructions
+    chooseCategory: "Kategori seçin",
 
     // footer
     address: "Josip Lang Meydanı 7, Zagreb",
@@ -264,6 +280,7 @@ export const translations: Record<Language, Record<string, string>> = {
     saturday: "Cumartesi",
     sunday: "Pazar",
     ourLocations: "Şubelerimiz",
+    currentLocation: "Güncel Şube",
     selectLocation: "Şube seçin",
     viewAllLocations: "Tüm şubeleri görüntüle",
     hideAllLocations: "Diğer şubeleri gizle",

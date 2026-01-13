@@ -92,6 +92,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <NavLink to="/admin/locations" className={linkClass}>
                                 Lokacije
                             </NavLink>
+                  
+
                         </nav>
 
                         <div className="text-xs text-white/70">
@@ -119,6 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     >
                                         Lokacije
                                     </NavLink>
+                        
                                 </nav>
 
                                 <div className="grid grid-cols-2 gap-2 pt-1">

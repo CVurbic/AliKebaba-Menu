@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabaseClient";
 import heroImage from "./heroImage.jpg";
-import logo from "../resources/LOGO Cjenik 1.png"
+import logo from "../resources/LOGO Cjenik 1.png";
 import { useLanguage } from "../context/LanguageContext";
 import { availableLanguages } from "../services/language";
 import LocationsDisplayFooter from "./LocationsDisplayFooter";
 import MenuAccordion from "./MenuAccordion";
+import { useParams } from "react-router-dom";
 
 type MenuData = Record<string, any[]> | null;
 
@@ -16,17 +17,40 @@ type HeaderProps = {
   currentLanguage: string;
   setLanguage: (lang: "hr" | "en" | "de" | "tr") => void;
   t: (key: string) => string;
+  branchLabel?: string;
 };
 
 type FooterProps = {
   isAuthenticated: boolean;
   t: (key: string) => string;
+  activeBranchSlug: string;
 };
 
-function HeroHeader({ heroImage, isOpen, setIsOpen, currentLanguage, setLanguage, t }: HeaderProps) {
+function HeroHeader({
+  heroImage,
+  isOpen,
+  setIsOpen,
+  currentLanguage,
+  setLanguage,
+  t,
+  branchLabel,
+}: HeaderProps) {
   return (
     <div className="relative h-[40vh] md:h-[60vh] w-full bg-[#C41E3A]">
-      <img src={heroImage} alt="Ali Kebaba restaurant" className="object-cover w-full h-full brightness-75" />
+      <img
+        src={heroImage}
+        alt="Ali Kebaba restaurant"
+        className="object-cover w-full h-full brightness-75"
+      />
+
+      {branchLabel ? (
+        <div className="absolute top-4 left-4 z-10">
+          <div className="bg-black/35 backdrop-blur-sm text-white rounded-xl px-4 py-2 shadow-md border border-white/10">
+            <div className="text-sm text-white/80">{t("currentLocation")}</div>
+            <div className="font-bold tracking-wide">{branchLabel}</div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="absolute top-4 right-4 z-10">
         <div className="relative">
@@ -34,7 +58,9 @@ function HeroHeader({ heroImage, isOpen, setIsOpen, currentLanguage, setLanguage
             onClick={() => setIsOpen(!isOpen)}
             className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md px-4 py-2 text-[#C41E3A] font-medium hover:bg-white/90 transition-colors flex items-center space-x-2"
           >
-            <span>{availableLanguages.find((lang) => lang.code === currentLanguage)?.name}</span>
+            <span>
+              {availableLanguages.find((lang) => lang.code === currentLanguage)?.name}
+            </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -58,8 +84,11 @@ function HeroHeader({ heroImage, isOpen, setIsOpen, currentLanguage, setLanguage
                     setLanguage(lang.code as "hr" | "en" | "de" | "tr");
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors ${currentLanguage === lang.code ? "text-[#C41E3A] font-medium" : "text-gray-700"
-                    }`}
+                  className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors ${
+                    currentLanguage === lang.code
+                      ? "text-[#C41E3A] font-medium"
+                      : "text-gray-700"
+                  }`}
                 >
                   {lang.name}
                 </button>
@@ -69,7 +98,11 @@ function HeroHeader({ heroImage, isOpen, setIsOpen, currentLanguage, setLanguage
         </div>
       </div>
 
-      <img src={logo} alt="AliKebaba Logo" className="md:block absolute -bottom-8 left-6 w-32 drop-shadow-lg" />
+      <img
+        src={logo}
+        alt="AliKebaba Logo"
+        className="md:block absolute -bottom-8 left-6 w-32 drop-shadow-lg"
+      />
     </div>
   );
 }
@@ -77,17 +110,17 @@ function HeroHeader({ heroImage, isOpen, setIsOpen, currentLanguage, setLanguage
 function MenuContent({ menuData }: { menuData: MenuData }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
-      <MenuAccordion menuData={menuData} defaultOpenKey="classic" />
+      <MenuAccordion menuData={menuData} defaultOpenKey="" />
     </div>
   );
 }
 
-function Footer({ isAuthenticated, t }: FooterProps) {
+function Footer({ isAuthenticated, t, activeBranchSlug }: FooterProps) {
   return (
     <footer className="bg-[#7a1627] text-white">
       <div className="mx-auto max-w-7xl px-4 py-8">
         <div className="mb-8">
-          <LocationsDisplayFooter />
+          <LocationsDisplayFooter activeBranchSlug={activeBranchSlug} />
         </div>
 
         <div className="pt-6 border-t border-[#a0313e] flex justify-center items-center gap-4">
@@ -107,13 +140,27 @@ function Footer({ isAuthenticated, t }: FooterProps) {
   );
 }
 
+function slugify(input: string) {
+  return (input || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 const Jelovnik = () => {
+  const { branchSlug } = useParams<{ branchSlug?: string }>();
+  const activeBranchSlug = useMemo(() => branchSlug ?? "dubrava", [branchSlug]);
+
   const [menuData, setMenuData] = useState<MenuData>(null);
   const [loading, setLoading] = useState(true);
 
   const { currentLanguage, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const [branchLabel, setBranchLabel] = useState<string>("");
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("preferredLanguage");
@@ -135,24 +182,78 @@ const Jelovnik = () => {
 
   useEffect(() => {
     const fetchMenuData = async () => {
+      setLoading(true);
+
       try {
-        const { data, error } = await supabase.from("jelovnik").select("*").order("collection_order", {
-          ascending: true,
+        // 1) Nađi lokaciju po slug-u
+        const { data: locationsData, error: locErr } = await supabase
+          .from("lokacije")
+          .select("id, lokacija, active")
+          .eq("active", true);
+
+        if (locErr) throw locErr;
+
+        const activeLoc =
+          (locationsData || []).find((l: any) => slugify(l.lokacija) === activeBranchSlug) ||
+          (locationsData || [])[0];
+
+        setBranchLabel(activeLoc?.lokacija || activeBranchSlug);
+
+        if (!activeLoc?.id) {
+          setMenuData({});
+          return;
+        }
+
+        // 2) Pivot: što je uključeno za lokaciju
+        const { data: links, error: linkErr } = await supabase
+          .from("lokacija_jelovnik")
+          .select("jelovnik_id, enabled, price_override, order_override")
+          .eq("lokacija_id", activeLoc.id)
+          .eq("enabled", true);
+
+        if (linkErr) throw linkErr;
+
+        const ids = (links || []).map((x: any) => x.jelovnik_id).filter(Boolean);
+
+        if (ids.length === 0) {
+          setMenuData({});
+          return;
+        }
+
+        // 3) Pravi artikli iz jelovnik tablice
+        const { data: items, error: itemsErr } = await supabase
+          .from("jelovnik")
+          .select("*")
+          .in("id", ids);
+
+        if (itemsErr) throw itemsErr;
+
+        // 4) Apply overrides (cijena + redoslijed)
+        const linkById = new Map<number, any>((links || []).map((l: any) => [l.jelovnik_id, l]));
+
+        const merged = (items || []).map((it: any) => {
+          const l = linkById.get(it.id);
+          return {
+            ...it,
+            price: l?.price_override ?? it.price,
+            collection_order: l?.order_override ?? it.collection_order,
+          };
         });
 
-        if (error) throw error;
+        merged.sort((a: any, b: any) => (a.collection_order ?? 0) - (b.collection_order ?? 0));
 
-        const groupedData = groupMenuItems(data || []);
+        const groupedData = groupMenuItems(merged);
         setMenuData(groupedData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching menu:", error);
+        setMenuData(null);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchMenuData();
-  }, []);
+  }, [activeBranchSlug]);
 
   const groupMenuItems = (data: any[]) => {
     return data.reduce((acc: Record<string, any[]>, item: any) => {
@@ -169,7 +270,9 @@ const Jelovnik = () => {
         DESERT: "desert",
       };
 
-      const key = Object.entries(collectionMap).find(([collection]) => (item.collection || "").startsWith(collection))?.[1];
+      const key = Object.entries(collectionMap).find(([collection]) =>
+        (item.collection || "").startsWith(collection)
+      )?.[1];
 
       if (key) {
         if (!acc[key]) acc[key] = [];
@@ -190,11 +293,12 @@ const Jelovnik = () => {
         currentLanguage={currentLanguage}
         setLanguage={setLanguage as any}
         t={t}
+        branchLabel={branchLabel}
       />
 
       <MenuContent menuData={menuData} />
 
-      <Footer isAuthenticated={isAuthenticated} t={t} />
+      <Footer isAuthenticated={isAuthenticated} t={t} activeBranchSlug={activeBranchSlug} />
     </main>
   );
 };

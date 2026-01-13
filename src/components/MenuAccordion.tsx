@@ -64,7 +64,7 @@ function classNames(...xs: Array<string | false | undefined | null>) {
     return xs.filter(Boolean).join(" ");
 }
 
-export default function MenuAccordion({ menuData, defaultOpenKey = "classic" }: Props) {
+export default function MenuAccordion({ menuData, defaultOpenKey = "" }: Props) {
     const { t, formatItemsCount } = useLanguage();
 
     const [openKey, setOpenKey] = useState<string>(defaultOpenKey);
