@@ -81,6 +81,12 @@ export const translations: Record<Language, Record<string, string>> = {
     hourShort: "h",
     minuteShort: "min",
 
+    // Featured sections
+    newInOffer: "Novo u ponudi",
+    featured: "Istaknuto",
+    newBadge: "NOVO",
+    featuredBadge: "ISTAKNUTO",
+
   },
 
   en: {
@@ -153,6 +159,12 @@ export const translations: Record<Language, Record<string, string>> = {
     hourShort: "h",
     minuteShort: "min",
 
+    // Featured sections
+    newInOffer: "New in offer",
+    featured: "Featured",
+    newBadge: "NEW",
+    featuredBadge: "FEATURED",
+
   },
 
   de: {
@@ -224,6 +236,12 @@ export const translations: Record<Language, Record<string, string>> = {
     hourShort: "Std",
     minuteShort: "Min",
 
+    // Featured sections
+    newInOffer: "Neu im Angebot",
+    featured: "Empfohlen",
+    newBadge: "NEU",
+    featuredBadge: "EMPFOHLEN",
+
   },
 
   tr: {
@@ -294,6 +312,12 @@ export const translations: Record<Language, Record<string, string>> = {
     closesAt: "Saat",
     hourShort: "sa",
     minuteShort: "dk",
+
+    // Featured sections
+    newInOffer: "Yeni teklifler",
+    featured: "Öne çıkan",
+    newBadge: "YENİ",
+    featuredBadge: "ÖNE ÇIKAN",
 
   },
 };

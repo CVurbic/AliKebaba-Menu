@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar for featured strip carousel */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
   width: 12px;

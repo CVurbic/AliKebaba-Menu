@@ -6,6 +6,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { availableLanguages } from "../services/language";
 import LocationsDisplayFooter from "./LocationsDisplayFooter";
 import MenuAccordion from "./MenuAccordion";
+import FeaturedStrip from "./FeaturedStrip";
 import { useParams } from "react-router-dom";
 
 type MenuData = Record<string, any[]> | null;
@@ -146,6 +147,8 @@ const Jelovnik = () => {
   const activeBranchSlug = useMemo(() => branchSlug ?? "dubrava", [branchSlug]);
 
   const [menuData, setMenuData] = useState<MenuData>(null);
+  const [newItems, setNewItems] = useState<any[]>([]);
+  const [featuredItems, setFeaturedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { currentLanguage, setLanguage, t } = useLanguage();
@@ -189,7 +192,7 @@ const Jelovnik = () => {
         // 2) Pivot: što je uključeno za lokaciju
         const { data: links, error: linkErr } = await supabase
           .from("lokacija_jelovnik")
-          .select("jelovnik_id, enabled, price_override, order_override")
+          .select("jelovnik_id, enabled, price_override, order_override, is_new, is_featured")
           .eq("lokacija_id", activeLoc.id)
           .eq("enabled", true);
 
@@ -219,10 +222,17 @@ const Jelovnik = () => {
             ...it,
             price: l?.price_override ?? it.price,
             collection_order: l?.order_override ?? it.collection_order,
+            is_new: l?.is_new ?? false,
+            is_featured: l?.is_featured ?? false,
           };
         });
 
-        merged.sort((a: any, b: any) => (a.collection_order ?? 0) - (b.collection_order ?? 0));
+        // merged.sort((a: any, b: any) => (a.collection_order ?? 0) - (b.collection_order ?? 0));
+        // Sort by product name
+        merged.sort((a: any, b: any) => a.product_name.localeCompare(b.product_name));
+
+        setNewItems(merged.filter((item: any) => item.is_new));
+        setFeaturedItems(merged.filter((item: any) => item.is_featured));
 
         const groupedData = groupMenuItems(merged);
         setMenuData(groupedData);
@@ -277,6 +287,17 @@ const Jelovnik = () => {
         t={t}
         branchLabel={branchLabel}
       />
+
+      {(newItems.length > 0 || featuredItems.length > 0) && (
+        <div className="mx-auto max-w-7xl px-4 pt-10 pb-2 space-y-6">
+          {newItems.length > 0 && (
+            <FeaturedStrip title={t("newInOffer")} badge={t("newBadge")} items={newItems} />
+          )}
+          {featuredItems.length > 0 && (
+            <FeaturedStrip title={t("featured")} badge={t("featuredBadge")} items={featuredItems} />
+          )}
+        </div>
+      )}
 
       <MenuContent menuData={menuData} />
 
