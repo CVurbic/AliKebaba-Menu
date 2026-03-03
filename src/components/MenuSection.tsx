@@ -145,11 +145,9 @@ function MenuSectionMobile({ items }: { items: MenuItem[] }) {
         useMenuData(items);
 
     const MobileItemRow = ({ item }: { item: ConsolidatedItem }) => {
-        console.log("item", item);
         const hasMultiple = item.sizes.length > 1;
         const title = getProductTranslation(item.baseItem, "product_name");
         const desc = getProductTranslation(item.baseItem, "description") || "";
-        console.log(`desc: ${desc}\n title: ${title}`);
 
         return (
             <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">

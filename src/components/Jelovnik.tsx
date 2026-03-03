@@ -21,7 +21,6 @@ type HeaderProps = {
 };
 
 type FooterProps = {
-  isAuthenticated: boolean;
   t: (key: string) => string;
   activeBranchSlug: string;
 };
@@ -115,7 +114,7 @@ function MenuContent({ menuData }: { menuData: MenuData }) {
   );
 }
 
-function Footer({ isAuthenticated, t, activeBranchSlug }: FooterProps) {
+function Footer({ t, activeBranchSlug }: FooterProps) {
   return (
     <footer className="bg-[#7a1627] text-white">
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -127,13 +126,6 @@ function Footer({ isAuthenticated, t, activeBranchSlug }: FooterProps) {
           <p className="text-center">
             © {new Date().getFullYear()} Ali Kebaba. {t("allRightsReserved")}
           </p>
-
-          <a
-            href={isAuthenticated ? "/admin" : "/admin/login"}
-            className="px-4 py-2 bg-white text-[#7a1627] rounded-md hover:bg-gray-100 transition-colors"
-          >
-            {isAuthenticated ? t("adminPanel") : t("login")}
-          </a>
         </div>
       </div>
     </footer>
@@ -158,7 +150,6 @@ const Jelovnik = () => {
 
   const { currentLanguage, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [branchLabel, setBranchLabel] = useState<string>("");
 
@@ -170,15 +161,6 @@ const Jelovnik = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-    };
-    checkAuth();
-  }, []);
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -291,14 +273,14 @@ const Jelovnik = () => {
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         currentLanguage={currentLanguage}
-        setLanguage={setLanguage as any}
+        setLanguage={setLanguage}
         t={t}
         branchLabel={branchLabel}
       />
 
       <MenuContent menuData={menuData} />
 
-      <Footer isAuthenticated={isAuthenticated} t={t} activeBranchSlug={activeBranchSlug} />
+      <Footer t={t} activeBranchSlug={activeBranchSlug} />
     </main>
   );
 };

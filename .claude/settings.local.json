@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm uninstall file-saver @types/file-saver react-dropzone xlsx)",
+      "Bash(python3 -:*)",
+      "Bash(grep -n \"as any\" src/**/*.tsx)",
+      "Bash(npm uninstall axios framer-motion)"
+    ]
+  }
+}
