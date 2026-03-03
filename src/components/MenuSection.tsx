@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage } from "../context/LanguageContext";
+import type { ModalItem } from "./ItemDetailModal";
 
 // Define interfaces for our data structure
 export interface MenuItem {
@@ -25,6 +26,7 @@ export interface MenuItem {
 interface MenuSectionProps {
     title: string;
     items: MenuItem[];
+    onItemClick?: (item: ModalItem) => void;
 }
 
 interface GroupedItems {
@@ -140,7 +142,7 @@ function useMenuData(items: MenuItem[]) {
  * - drugačiji layout: list + accordion (details/summary)
  * - fokus na čitljivost i brz scroll
  * -------------------------- */
-function MenuSectionMobile({ items }: { items: MenuItem[] }) {
+function MenuSectionMobile({ items, onItemClick }: { items: MenuItem[]; onItemClick?: (item: ModalItem) => void }) {
     const { t, getProductTranslation, standardGrouped, menuGrouped, consolidateItems } =
         useMenuData(items);
 
@@ -149,8 +151,17 @@ function MenuSectionMobile({ items }: { items: MenuItem[] }) {
         const title = getProductTranslation(item.baseItem, "product_name");
         const desc = getProductTranslation(item.baseItem, "description") || "";
 
+        const handleClick = () => {
+            onItemClick?.({
+                product_name: title,
+                image: item.baseItem.image,
+                description: desc || undefined,
+                sizes: item.sizes.map((s) => ({ label: s.name, price: s.price })),
+            });
+        };
+
         return (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div onClick={handleClick} className={`rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden${onItemClick ? " cursor-pointer active:scale-[0.98] transition-transform" : ""}`}>
                 <div className="flex flex-col sm:flex-row gap-3 p-3">
 
                     {/* Image */}
@@ -292,7 +303,7 @@ function MenuSectionMobile({ items }: { items: MenuItem[] }) {
  * DESKTOP VIEW (md+)
  * - tvoj postojeći grid layout (minimalno dirano)
  * -------------------------- */
-function MenuSectionDesktop({ items }: { items: MenuItem[] }) {
+function MenuSectionDesktop({ items, onItemClick }: { items: MenuItem[]; onItemClick?: (item: ModalItem) => void }) {
     const { t, getProductTranslation, standardGrouped, menuGrouped, consolidateItems } =
         useMenuData(items);
 
@@ -314,7 +325,13 @@ function MenuSectionDesktop({ items }: { items: MenuItem[] }) {
                                     {consolidatedItems.map((item) => (
                                         <div
                                             key={item.baseItem.external_id}
-                                            className="rounded-lg bg-gray-50 p-6 shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-2xl flex flex-col justify-between min-h-[320px] border border-gray-200"
+                                            onClick={() => onItemClick?.({
+                                                product_name: getProductTranslation(item.baseItem, "product_name"),
+                                                image: item.baseItem.image,
+                                                description: getProductTranslation(item.baseItem, "description") || undefined,
+                                                sizes: item.sizes.map((s) => ({ label: s.name, price: s.price })),
+                                            })}
+                                            className={`rounded-lg bg-gray-50 p-6 shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-2xl flex flex-col justify-between min-h-[320px] border border-gray-200${onItemClick ? " cursor-pointer" : ""}`}
                                         >
                                             {item.baseItem.image && (
                                                 <div className="mb-4 overflow-hidden rounded-lg">
@@ -387,7 +404,13 @@ function MenuSectionDesktop({ items }: { items: MenuItem[] }) {
                                         {consolidatedItems.map((item) => (
                                             <div
                                                 key={item.baseItem.external_id}
-                                                className="rounded-lg bg-gradient-to-br from-white to-gray-50 p-6 shadow-2xl transition-transform duration-300 hover:scale-105 flex flex-col justify-between min-h-[320px] border-2 border-[#C41E3A]"
+                                                onClick={() => onItemClick?.({
+                                                    product_name: getProductTranslation(item.baseItem, "product_name"),
+                                                    image: item.baseItem.image,
+                                                    description: getProductTranslation(item.baseItem, "description") || undefined,
+                                                    sizes: item.sizes.map((s) => ({ label: s.name, price: s.price })),
+                                                })}
+                                                className={`rounded-lg bg-gradient-to-br from-white to-gray-50 p-6 shadow-2xl transition-transform duration-300 hover:scale-105 flex flex-col justify-between min-h-[320px] border-2 border-[#C41E3A]${onItemClick ? " cursor-pointer" : ""}`}
                                             >
                                                 {item.baseItem.image && (
                                                     <div className="mb-4 overflow-hidden rounded-lg">
@@ -456,18 +479,18 @@ function MenuSectionDesktop({ items }: { items: MenuItem[] }) {
 }
 
 
-const MenuSection = ({ title, items }: MenuSectionProps) => {
+const MenuSection = ({ title, items, onItemClick }: MenuSectionProps) => {
     // title trenutno ne koristiš u prikazu, ali ostavljam prop (možeš ga ubacit po želji)
     return (
         <div>
             {/* MOBILE */}
             <div className="block md:hidden">
-                <MenuSectionMobile items={items} />
+                <MenuSectionMobile items={items} onItemClick={onItemClick} />
             </div>
 
             {/* DESKTOP */}
             <div className="hidden md:block">
-                <MenuSectionDesktop items={items} />
+                <MenuSectionDesktop items={items} onItemClick={onItemClick} />
             </div>
         </div>
     );

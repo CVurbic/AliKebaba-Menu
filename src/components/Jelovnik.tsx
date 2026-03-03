@@ -7,6 +7,7 @@ import { availableLanguages } from "../services/language";
 import LocationsDisplayFooter from "./LocationsDisplayFooter";
 import MenuAccordion from "./MenuAccordion";
 import FeaturedStrip from "./FeaturedStrip";
+import ItemDetailModal, { type ModalItem } from "./ItemDetailModal";
 import { useParams } from "react-router-dom";
 
 type MenuData = Record<string, any[]> | null;
@@ -107,10 +108,10 @@ function HeroHeader({
   );
 }
 
-function MenuContent({ menuData }: { menuData: MenuData }) {
+function MenuContent({ menuData, onItemClick }: { menuData: MenuData; onItemClick?: (item: ModalItem) => void }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
-      <MenuAccordion menuData={menuData} defaultOpenKey="" />
+      <MenuAccordion menuData={menuData} defaultOpenKey="" onItemClick={onItemClick} />
     </div>
   );
 }
@@ -150,6 +151,7 @@ const Jelovnik = () => {
   const [newItems, setNewItems] = useState<any[]>([]);
   const [featuredItems, setFeaturedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalItem, setModalItem] = useState<ModalItem | null>(null);
 
   const { currentLanguage, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -291,17 +293,19 @@ const Jelovnik = () => {
       {(newItems.length > 0 || featuredItems.length > 0) && (
         <div className="mx-auto max-w-7xl px-4 pt-10 pb-2 space-y-6">
           {newItems.length > 0 && (
-            <FeaturedStrip title={t("newInOffer")} badge={t("newBadge")} items={newItems} />
+            <FeaturedStrip title={t("newInOffer")} badge={t("newBadge")} items={newItems} onItemClick={setModalItem} />
           )}
           {featuredItems.length > 0 && (
-            <FeaturedStrip title={t("featured")} badge={t("featuredBadge")} items={featuredItems} />
+            <FeaturedStrip title={t("featured")} badge={t("featuredBadge")} items={featuredItems} onItemClick={setModalItem} />
           )}
         </div>
       )}
 
-      <MenuContent menuData={menuData} />
+      <MenuContent menuData={menuData} onItemClick={setModalItem} />
 
       <Footer t={t} activeBranchSlug={activeBranchSlug} />
+
+      <ItemDetailModal item={modalItem} onClose={() => setModalItem(null)} />
     </main>
   );
 };

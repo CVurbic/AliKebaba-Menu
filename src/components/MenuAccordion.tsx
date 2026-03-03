@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import MenuSection from "./MenuSection";
 import { useLanguage } from "../context/LanguageContext";
+import type { ModalItem } from "./ItemDetailModal";
 
 import steakBg from "../resources/menu-categories/steak.png";
 import classicBg from "../resources/menu-categories/classic.png";
@@ -17,6 +18,7 @@ type MenuData = Record<string, any[]> | null;
 type Props = {
     menuData: MenuData;
     defaultOpenKey?: string;
+    onItemClick?: (item: ModalItem) => void;
 };
 
 const ORDER = ["steak", "classic", "chicken", "mix", "nuggets", "vege", "prilozi", "desert", "napitci"];
@@ -64,7 +66,7 @@ function classNames(...xs: Array<string | false | undefined | null>) {
     return xs.filter(Boolean).join(" ");
 }
 
-export default function MenuAccordion({ menuData, defaultOpenKey = "" }: Props) {
+export default function MenuAccordion({ menuData, defaultOpenKey = "", onItemClick }: Props) {
     const { t, formatItemsCount } = useLanguage();
 
     const [openKey, setOpenKey] = useState<string>(defaultOpenKey);
@@ -303,7 +305,7 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "" }: Props) 
                             </button>
 
                             <div className="px-5 py-5 bg-[#fffafa]">
-                                <MenuSection title={t(openKey.toUpperCase())} items={openItems} />
+                                <MenuSection title={t(openKey.toUpperCase())} items={openItems} onItemClick={onItemClick} />
                             </div>
                         </div>
                     ) : (
@@ -409,7 +411,7 @@ export default function MenuAccordion({ menuData, defaultOpenKey = "" }: Props) 
 
                                 {isOpen ? (
                                     <div className="px-4 py-4 bg-[#fffafa]">
-                                        <MenuSection title={t(key.toUpperCase())} items={items} />
+                                        <MenuSection title={t(key.toUpperCase())} items={items} onItemClick={onItemClick} />
                                     </div>
                                 ) : null}
                             </div>
