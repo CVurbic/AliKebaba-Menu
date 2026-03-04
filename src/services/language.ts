@@ -87,6 +87,10 @@ export const translations: Record<Language, Record<string, string>> = {
     newBadge: "NOVO",
     featuredBadge: "ISTAKNUTO",
 
+    // Welcome modal
+    welcomeTitle: "Dobrodošli u Ali Kebaba!",
+    selectBranch: "Odaberite svoju poslovnicu",
+
   },
 
   en: {
@@ -165,6 +169,10 @@ export const translations: Record<Language, Record<string, string>> = {
     newBadge: "NEW",
     featuredBadge: "FEATURED",
 
+    // Welcome modal
+    welcomeTitle: "Welcome to Ali Kebaba!",
+    selectBranch: "Select your branch",
+
   },
 
   de: {
@@ -242,6 +250,10 @@ export const translations: Record<Language, Record<string, string>> = {
     newBadge: "NEU",
     featuredBadge: "EMPFOHLEN",
 
+    // Welcome modal
+    welcomeTitle: "Willkommen bei Ali Kebaba!",
+    selectBranch: "Wähle deine Filiale",
+
   },
 
   tr: {
@@ -318,6 +330,10 @@ export const translations: Record<Language, Record<string, string>> = {
     featured: "Öne çıkan",
     newBadge: "YENİ",
     featuredBadge: "ÖNE ÇIKAN",
+
+    // Welcome modal
+    welcomeTitle: "Ali Kebaba'ya hoş geldiniz!",
+    selectBranch: "Şubenizi seçin",
 
   },
 };

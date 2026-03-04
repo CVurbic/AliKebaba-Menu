@@ -8,7 +8,8 @@ import LocationsDisplayFooter from "./LocationsDisplayFooter";
 import MenuAccordion from "./MenuAccordion";
 import FeaturedStrip from "./FeaturedStrip";
 import ItemDetailModal, { type ModalItem } from "./ItemDetailModal";
-import { useParams } from "react-router-dom";
+import WelcomeModal from "./WelcomeModal";
+import { useParams, useNavigate } from "react-router-dom";
 
 type MenuData = Record<string, any[]> | null;
 
@@ -145,7 +146,13 @@ function slugify(input: string) {
 
 const Jelovnik = () => {
   const { branchSlug } = useParams<{ branchSlug?: string }>();
+  const navigate = useNavigate();
   const activeBranchSlug = useMemo(() => branchSlug ?? "dubrava", [branchSlug]);
+
+  // Synchronously detect if we need to show branch picker
+  const [showWelcome, setShowWelcome] = useState<boolean>(
+    !branchSlug && !localStorage.getItem("preferredBranch")
+  );
 
   const [menuData, setMenuData] = useState<MenuData>(null);
   const [newItems, setNewItems] = useState<any[]>([]);
@@ -166,8 +173,17 @@ const Jelovnik = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-redirect if no branch in URL but preference is saved
+  useEffect(() => {
+    if (branchSlug) return;
+    const saved = localStorage.getItem("preferredBranch");
+    if (saved) navigate(`/${saved}`, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   useEffect(() => {
+    if (showWelcome) return;
     const fetchMenuData = async () => {
       setLoading(true);
 
@@ -275,6 +291,16 @@ const Jelovnik = () => {
       return acc;
     }, {});
   };
+
+  if (showWelcome) return (
+    <WelcomeModal
+      onSelect={(slug) => {
+        localStorage.setItem("preferredBranch", slug);
+        navigate(`/${slug}`, { replace: true });
+        setShowWelcome(false);
+      }}
+    />
+  );
 
   if (loading) return <div className="text-center py-8">{t("loading")}</div>;
 
