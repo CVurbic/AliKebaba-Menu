@@ -7,7 +7,9 @@ import { availableLanguages } from "../services/language";
 import LocationsDisplayFooter from "./LocationsDisplayFooter";
 import MenuAccordion from "./MenuAccordion";
 import FeaturedStrip from "./FeaturedStrip";
-import { useParams } from "react-router-dom";
+import ItemDetailModal, { type ModalItem } from "./ItemDetailModal";
+import WelcomeModal from "./WelcomeModal";
+import { useParams, useNavigate } from "react-router-dom";
 
 type MenuData = Record<string, any[]> | null;
 
@@ -107,10 +109,10 @@ function HeroHeader({
   );
 }
 
-function MenuContent({ menuData }: { menuData: MenuData }) {
+function MenuContent({ menuData, onItemClick }: { menuData: MenuData; onItemClick?: (item: ModalItem) => void }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
-      <MenuAccordion menuData={menuData} defaultOpenKey="" />
+      <MenuAccordion menuData={menuData} defaultOpenKey="" onItemClick={onItemClick} />
     </div>
   );
 }
@@ -144,12 +146,19 @@ function slugify(input: string) {
 
 const Jelovnik = () => {
   const { branchSlug } = useParams<{ branchSlug?: string }>();
+  const navigate = useNavigate();
   const activeBranchSlug = useMemo(() => branchSlug ?? "dubrava", [branchSlug]);
+
+  // Synchronously detect if we need to show branch picker
+  const [showWelcome, setShowWelcome] = useState<boolean>(
+    !branchSlug && !localStorage.getItem("preferredBranch")
+  );
 
   const [menuData, setMenuData] = useState<MenuData>(null);
   const [newItems, setNewItems] = useState<any[]>([]);
   const [featuredItems, setFeaturedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalItem, setModalItem] = useState<ModalItem | null>(null);
 
   const { currentLanguage, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -164,8 +173,17 @@ const Jelovnik = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-redirect if no branch in URL but preference is saved
+  useEffect(() => {
+    if (branchSlug) return;
+    const saved = localStorage.getItem("preferredBranch");
+    if (saved) navigate(`/${saved}`, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   useEffect(() => {
+    if (showWelcome) return;
     const fetchMenuData = async () => {
       setLoading(true);
 
@@ -274,6 +292,16 @@ const Jelovnik = () => {
     }, {});
   };
 
+  if (showWelcome) return (
+    <WelcomeModal
+      onSelect={(slug) => {
+        localStorage.setItem("preferredBranch", slug);
+        navigate(`/${slug}`, { replace: true });
+        setShowWelcome(false);
+      }}
+    />
+  );
+
   if (loading) return <div className="text-center py-8">{t("loading")}</div>;
 
   return (
@@ -291,17 +319,19 @@ const Jelovnik = () => {
       {(newItems.length > 0 || featuredItems.length > 0) && (
         <div className="mx-auto max-w-7xl px-4 pt-10 pb-2 space-y-6">
           {newItems.length > 0 && (
-            <FeaturedStrip title={t("newInOffer")} badge={t("newBadge")} items={newItems} />
+            <FeaturedStrip title={t("newInOffer")} badge={t("newBadge")} items={newItems} onItemClick={setModalItem} />
           )}
           {featuredItems.length > 0 && (
-            <FeaturedStrip title={t("featured")} badge={t("featuredBadge")} items={featuredItems} />
+            <FeaturedStrip title={t("featured")} badge={t("featuredBadge")} items={featuredItems} onItemClick={setModalItem} />
           )}
         </div>
       )}
 
-      <MenuContent menuData={menuData} />
+      <MenuContent menuData={menuData} onItemClick={setModalItem} />
 
       <Footer t={t} activeBranchSlug={activeBranchSlug} />
+
+      <ItemDetailModal item={modalItem} onClose={() => setModalItem(null)} />
     </main>
   );
 };

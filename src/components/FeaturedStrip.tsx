@@ -1,13 +1,24 @@
 import { useLanguage } from "../context/LanguageContext";
+import type { ModalItem } from "./ItemDetailModal";
 
 interface FeaturedStripProps {
   title: string;
   badge: string;
   items: any[];
+  onItemClick?: (item: ModalItem) => void;
 }
 
-export default function FeaturedStrip({ title, badge, items }: FeaturedStripProps) {
+export default function FeaturedStrip({ title, badge, items, onItemClick }: FeaturedStripProps) {
   const { getProductTranslation } = useLanguage();
+
+  const handleClick = (item: any) => {
+    onItemClick?.({
+      product_name: getProductTranslation(item, "product_name"),
+      image: item.image,
+      description: getProductTranslation(item, "description") || undefined,
+      sizes: [{ label: item.size || "", price: Number(item.price) }],
+    });
+  };
 
   return (
     <section>
@@ -16,7 +27,8 @@ export default function FeaturedStrip({ title, badge, items }: FeaturedStripProp
         {items.map((item) => (
           <div
             key={item.id}
-            className="relative flex-none w-44 sm:w-52 rounded-2xl border border-black/10 bg-white shadow-sm overflow-hidden snap-start"
+            onClick={() => handleClick(item)}
+            className="relative flex-none w-44 sm:w-52 rounded-2xl border border-black/10 bg-white shadow-sm overflow-hidden snap-start cursor-pointer active:scale-[0.97] transition-transform"
           >
             {/* Badge */}
             <div className="absolute top-2 right-2 z-10 bg-[#C41E3A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -29,7 +41,7 @@ export default function FeaturedStrip({ title, badge, items }: FeaturedStripProp
                 src={item.image}
                 alt=""
                 aria-hidden="true"
-                className="h-28 w-full object-cover"
+                className="h-28 mx-auto object-cover"
                 loading="lazy"
               />
             ) : (
